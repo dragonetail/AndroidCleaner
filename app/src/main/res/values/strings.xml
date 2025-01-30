@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">AndroidCleaner</string>
+    <string name="app_name">Android Cleaner</string>
+    <string name="search">Search</string>
+    <string name="recordings">Recordings</string>
+    <string name="categories">Categories</string>
+    <string name="settings">Settings</string>
 </resources>

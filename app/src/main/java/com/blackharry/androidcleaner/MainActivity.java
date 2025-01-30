@@ -11,6 +11,9 @@ import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
 
+import androidx.appcompat.widget.Toolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -22,6 +25,26 @@ public class MainActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            String title = item.getTitle().toString();
+            switch (title) {
+                case "recordings":
+                    // Handle recordings action
+                    return true;
+                case "categories":
+                    // Handle categories action
+                    return true;
+                case "settings":
+                    // Handle settings action
+                    return true;
+            }
+            return false;
         });
     }
 
