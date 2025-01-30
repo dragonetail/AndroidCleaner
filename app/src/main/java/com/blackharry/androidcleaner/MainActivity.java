@@ -1,27 +1,21 @@
 package com.blackharry.androidcleaner;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import androidx.appcompat.widget.Toolbar;
+import com.blackharry.androidcleaner.recordings.RecordingsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
-    private RecordingAdapter adapter;
-    private List<File> recordings;
+    private static final int PERMISSION_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
             String title = item.getTitle().toString();
             switch (title) {
                 case "recordings":
-                    loadAndDisplayRecordings();
+                    showRecordingsFragment();
                     return true;
                 case "categories":
                     // Handle categories action
@@ -54,66 +48,37 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // 初始化RecyclerView
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recordings = new ArrayList<>();
-        adapter = new RecordingAdapter(recordings, this);
-        recyclerView.setAdapter(adapter);
+        // 检查并请求权限
+        checkAndRequestPermissions();
     }
 
-    private void loadAndDisplayRecordings() {
-        // 清空当前列表
-        recordings.clear();
-        
-        // 获取录音文件列表
-        File recordingsDir = new File(Environment.getExternalStorageDirectory(), "Recordings");
-        if (recordingsDir.exists() && recordingsDir.isDirectory()) {
-            File[] files = recordingsDir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isFile() && isAudioFile(file)) {
-                        recordings.add(file);
-                    }
-                }
-            }
-        }
-        
-        // 通知适配器数据已更新
-        adapter.notifyDataSetChanged();
+    private void showRecordingsFragment() {
+        getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.fragment_container, new RecordingsFragment())
+            .commit();
     }
 
-    private boolean isAudioFile(File file) {
-        String name = file.getName().toLowerCase();
-        return name.endsWith(".mp3") || 
-               name.endsWith(".wav") || 
-               name.endsWith(".m4a") || 
-               name.endsWith(".aac");
-    }
-
-    public void filterAndClassifyRecordings() {
-        // 获取录音文件列表
-        File recordingsDir = new File(Environment.getExternalStorageDirectory(), "Recordings");
-        if (recordingsDir.exists() && recordingsDir.isDirectory()) {
-            File[] files = recordingsDir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    // 过滤逻辑
-                    if (isDeletedCallRecording(file)) {
-                        // 分类逻辑
-                        classifyRecording(file);
-                    }
-                }
-            }
+    private void checkAndRequestPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                },
+                PERMISSION_REQUEST_CODE);
         }
     }
 
-    private boolean isDeletedCallRecording(File file) {
-        // 判断文件是否为已删除通话记录的录音
-        return file.getName().contains("deleted");
-    }
-
-    private void classifyRecording(File file) {
-        // 根据通话频次和占用空间大小进行分类
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 权限已授予，可以显示录音列表
+                showRecordingsFragment();
+            }
+        }
     }
 }
