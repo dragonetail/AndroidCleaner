@@ -23,11 +23,13 @@ import com.blackharry.androidcleaner.overview.OverviewFragment;
 import com.blackharry.androidcleaner.calls.ui.CallsFragment;
 import com.blackharry.androidcleaner.contacts.ui.ContactsFragment;
 import androidx.fragment.app.Fragment;
+import com.blackharry.androidcleaner.common.utils.TestDataManager;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int PERMISSION_REQUEST_CODE = 1;
     private final String[] REQUIRED_PERMISSIONS;
+    private TestDataManager testDataManager;
 
     public MainActivity() {
         // 根据Android版本选择不同的权限
@@ -66,6 +68,10 @@ public class MainActivity extends AppCompatActivity {
             });
 
             LogUtils.d(TAG, "开始初始化界面组件");
+
+            // 初始化测试数据管理器
+            testDataManager = new TestDataManager(this, AppDatabase.getInstance(this));
+            testDataManager.initializeTestDataIfNeeded();
 
             initializeToolbar();
             initializeBottomNavigation();
