@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeBottomNavigation() {
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         if (bottomNavigationView == null) {
             LogUtils.logError(TAG, "BottomNavigationView not found in layout", 
                 new IllegalStateException("View not found"));
@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
             
             getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
+                .replace(R.id.nav_host_fragment, fragment)
                 .commit();
             
             LogUtils.logPerformance(TAG, "切换Fragment", startTime);

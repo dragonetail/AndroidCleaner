@@ -6,6 +6,8 @@ import android.provider.CallLog;
 import android.provider.ContactsContract;
 import com.blackharry.androidcleaner.App;
 import com.blackharry.androidcleaner.AppDatabase;
+import com.blackharry.androidcleaner.BuildConfig;
+import com.blackharry.androidcleaner.common.test.TestDataManager;
 import com.blackharry.androidcleaner.common.utils.LogUtils;
 import com.blackharry.androidcleaner.calls.data.CallEntity;
 import com.blackharry.androidcleaner.contacts.data.ContactEntity;
@@ -29,9 +31,18 @@ public class DataSyncManager {
         long startTime = System.currentTimeMillis();
 
         try {
-            syncContacts();
-            syncCalls();
-            syncRecordings();
+            // 在调试模式下使用测试数据
+            if (BuildConfig.DEBUG) {
+                LogUtils.i(TAG, "使用测试数据");
+                TestDataManager testDataManager = new TestDataManager(context);
+                testDataManager.generateTestData();
+            } else {
+                LogUtils.i(TAG, "使用真实数据");
+                // 正常同步数据
+                syncContacts();
+                syncCalls();
+                syncRecordings();
+            }
             
             LogUtils.logPerformance(TAG, "完成全部数据同步", startTime);
         } catch (Exception e) {
