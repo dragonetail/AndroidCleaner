@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="debug_primary">#FF9800</color>
+    <color name="debug_primary_dark">#F57C00</color>
+    <color name="debug_accent">#FF5722</color>
 </resources>

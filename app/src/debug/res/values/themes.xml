@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.AndroidCleaner.Debug" parent="Theme.AndroidCleaner">
+        <item name="colorPrimary">@color/debug_primary</item>
+        <item name="colorPrimaryDark">@color/debug_primary_dark</item>
+        <item name="colorAccent">@color/debug_accent</item>
+        <item name="android:windowBackground">@color/debug_background</item>
+    </style>
+</resources> 
