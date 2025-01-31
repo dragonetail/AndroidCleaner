@@ -1,10 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Android Cleaner</string>
     <string name="search">Search</string>
     <string name="recordings">Recordings</string>
     <string name="categories">Categories</string>
     <string name="settings">Settings</string>
-    <string name="action_debug">数据库调试</string>
+    <string name="action_debug">调试</string>
     <string name="debug_title">数据库调试</string>
     <string name="debug_record_count">数据库记录数: %d</string>
     <string name="debug_id">ID: %d</string>
@@ -21,4 +22,30 @@
     <string name="no_data">暂无数据</string>
     <string name="loading">加载中...</string>
     <string name="app_name_debug">Android Cleaner Debug</string>
+    
+    <!-- 底部导航栏标题 -->
+    <string name="title_overview">概览</string>
+    <string name="title_recordings">录音</string>
+    <string name="title_calls">通话</string>
+    <string name="title_contacts">联系人</string>
+    
+    <!-- 导航栏文本 -->
+    <string name="nav_overview">概览</string>
+    <string name="nav_recordings">录音</string>
+    <string name="nav_calls">通话</string>
+    <string name="nav_contacts">联系人</string>
+    
+    <!-- CoordinatorLayout behavior -->
+    <string name="appbar_scrolling_view_behavior">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
+    
+    <!-- 通用 -->
+    <string name="more_options">更多选项</string>
+    <string name="play_pause">播放/暂停</string>
+    <string name="stop">停止</string>
+    <string name="playback_progress">播放进度</string>
+    
+    <!-- 录音相关 -->
+    <string name="recording_duration">%1$d分%2$d秒</string>
+    <string name="recording_date">%1$s</string>
+    <string name="recording_size">%1$s</string>
 </resources>

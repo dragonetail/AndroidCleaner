@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "fc2d67bcac2b74ab797c0aa0edfee6b4",
+    "identityHash": "4cf59906a3ae3653eb2956b6f65c43ee",
     "entities": [
       {
         "tableName": "recordings",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `file_name` TEXT, `file_path` TEXT, `file_size` INTEGER NOT NULL, `created_time` INTEGER NOT NULL, `duration` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `file_name` TEXT, `file_path` TEXT, `file_size` INTEGER NOT NULL, `created_time` INTEGER NOT NULL, `modified_time` INTEGER NOT NULL, `duration` INTEGER NOT NULL, `is_call_recording` INTEGER NOT NULL, `phone_number` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -39,10 +39,28 @@
             "notNull": true
           },
           {
+            "fieldPath": "modifiedTime",
+            "columnName": "modified_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "duration",
             "columnName": "duration",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "isCallRecording",
+            "columnName": "is_call_recording",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phoneNumber",
+            "columnName": "phone_number",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -264,7 +282,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fc2d67bcac2b74ab797c0aa0edfee6b4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4cf59906a3ae3653eb2956b6f65c43ee')"
     ]
   }
 }

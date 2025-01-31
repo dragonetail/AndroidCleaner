@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 存储使用情况图表 -->
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/chart_storage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 总存储空间 -->
+        <TextView
+            android:id="@+id/text_total_storage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textSize="16sp" />
+
+        <!-- 录音统计 -->
+        <TextView
+            android:id="@+id/text_recording_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/text_recording_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:textSize="14sp" />
+
+        <!-- 通话统计 -->
+        <TextView
+            android:id="@+id/text_call_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/text_call_duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:textSize="14sp" />
+
+        <!-- 联系人统计 -->
+        <TextView
+            android:id="@+id/text_contact_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:textSize="14sp" />
+
+        <!-- 清理建议 -->
+        <TextView
+            android:id="@+id/text_cleanup_suggestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:textSize="14sp"
+            android:textColor="@color/accent" />
+
+    </LinearLayout>
+</ScrollView> 

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="搜索"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="ifRoom|collapseActionView" />
+
+    <item
+        android:id="@+id/action_filter"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:title="筛选"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/action_filter_all"
+                android:title="全部联系人" />
+            <item
+                android:id="@+id/action_filter_safe_zone"
+                android:title="安全区联系人" />
+            <item
+                android:id="@+id/action_filter_temp_zone"
+                android:title="临时区联系人" />
+            <item
+                android:id="@+id/action_filter_blacklist"
+                android:title="黑名单联系人" />
+            <item
+                android:id="@+id/action_filter_deleted"
+                android:title="已删除联系人" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/action_sync"
+        android:icon="@android:drawable/ic_popup_sync"
+        android:title="同步"
+        app:showAsAction="ifRoom" />
+
+</menu> 

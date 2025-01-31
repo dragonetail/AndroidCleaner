@@ -1,8 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="debug_primary">#FF9800</color>
-    <color name="debug_primary_dark">#F57C00</color>
-    <color name="debug_accent">#FF5722</color>
+    <!-- 基础颜色 -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- 主题颜色 -->
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="accent">#FF4081</color>
+    <color name="accent_dark">#248A3D</color>
+
+    <!-- 背景颜色 -->
+    <color name="background">#F2F2F7</color>
+    <color name="surface">#FFFFFF</color>
+
+    <!-- 文本颜色 -->
+    <color name="text_primary">#000000</color>
+    <color name="text_secondary">#8E8E93</color>
+    <color name="text_tertiary">#C7C7CC</color>
+
+    <!-- 分割线颜色 -->
+    <color name="divider">#BDBDBD</color>
+
+    <!-- 底部导航栏颜色 -->
+    <color name="nav_item_selected">@android:color/white</color>
+    <color name="nav_item_unselected">#80FFFFFF</color>
+
+    <!-- 涟漪效果颜色 -->
+    <color name="ripple_color">#1F007AFF</color>
+
+    <!-- 状态颜色 -->
+    <color name="success">#34C759</color>
+    <color name="error">#FF3B30</color>
+    <color name="warning">#FF9500</color>
+    <color name="info">#5856D6</color>
+
+    <!-- 调试模式颜色 -->
+    <color name="debug_primary">#FF6B6B</color>
+    <color name="debug_primary_dark">#FF5252</color>
+    <color name="debug_accent">#FFB74D</color>
+
+    <!-- 底部导航栏颜色选择器 -->
+    <color name="bottom_nav_item_selected">@color/primary</color>
+    <color name="bottom_nav_item_unselected">#757575</color>
 </resources>

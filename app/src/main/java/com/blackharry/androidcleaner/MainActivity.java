@@ -3,14 +3,13 @@ package com.blackharry.androidcleaner;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.appcompat.widget.Toolbar;
-import com.blackharry.androidcleaner.recordings.RecordingsFragment;
+import com.blackharry.androidcleaner.recordings.ui.RecordingsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -18,12 +17,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
-import android.content.Intent;
-import android.view.Menu;
-import android.view.MenuItem;
-import com.blackharry.androidcleaner.recordings.data.DatabaseDebugActivity;
 import android.app.AlertDialog;
-import com.blackharry.androidcleaner.utils.LogUtils;
+import com.blackharry.androidcleaner.common.utils.LogUtils;
+import com.blackharry.androidcleaner.overview.OverviewFragment;
+import com.blackharry.androidcleaner.calls.ui.CallsFragment;
+import com.blackharry.androidcleaner.contacts.ui.ContactsFragment;
+import androidx.fragment.app.Fragment;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -68,35 +67,8 @@ public class MainActivity extends AppCompatActivity {
 
             LogUtils.d(TAG, "开始初始化界面组件");
 
-            Toolbar toolbar = findViewById(R.id.toolbar);
-            if (toolbar == null) {
-                Log.e(TAG, "onCreate: Toolbar not found in layout");
-                return;
-            }
-            setSupportActionBar(toolbar);
-
-            BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
-            if (bottomNavigationView == null) {
-                Log.e(TAG, "onCreate: BottomNavigationView not found in layout");
-                return;
-            }
-            bottomNavigationView.setOnItemSelectedListener(item -> {
-                String title = item.getTitle().toString();
-                switch (title) {
-                    case "recordings":
-                        showRecordingsFragment();
-                        return true;
-                    case "categories":
-                        // Handle categories action
-                        return true;
-                    case "settings":
-                        // Handle settings action
-                        return true;
-                }
-                return false;
-            });
-
-            // 检查并请求权限
+            initializeToolbar();
+            initializeBottomNavigation();
             checkPermissions();
 
             LogUtils.logPerformance(TAG, "界面初始化", startTime);
@@ -107,22 +79,59 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showRecordingsFragment() {
+    private void initializeToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            toolbar.setTitle(R.string.app_name);
+        }
+    }
+
+    private void initializeBottomNavigation() {
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        if (bottomNavigationView == null) {
+            LogUtils.logError(TAG, "BottomNavigationView not found in layout", 
+                new IllegalStateException("View not found"));
+            return;
+        }
+        
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_overview) {
+                showFragment(new OverviewFragment());
+                return true;
+            } else if (itemId == R.id.navigation_recordings) {
+                showFragment(new RecordingsFragment());
+                return true;
+            } else if (itemId == R.id.navigation_calls) {
+                showFragment(new CallsFragment());
+                return true;
+            } else if (itemId == R.id.navigation_contacts) {
+                showFragment(new ContactsFragment());
+                return true;
+            }
+            return false;
+        });
+        
+        // 默认选中概览页面
+        bottomNavigationView.setSelectedItemId(R.id.navigation_overview);
+    }
+
+    private void showFragment(Fragment fragment) {
         try {
-            LogUtils.logMethodEnter(TAG, "showRecordingsFragment");
+            LogUtils.logMethodEnter(TAG, "showFragment: " + fragment.getClass().getSimpleName());
             long startTime = System.currentTimeMillis();
             
             getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, new RecordingsFragment())
+                .replace(R.id.fragment_container, fragment)
                 .commit();
             
-            LogUtils.logPerformance(TAG, "加载录音列表", startTime);
-            LogUtils.logMethodExit(TAG, "showRecordingsFragment");
-            
+            LogUtils.logPerformance(TAG, "切换Fragment", startTime);
+            LogUtils.logMethodExit(TAG, "showFragment");
         } catch (Exception e) {
-            LogUtils.logError(TAG, "加载录音列表失败", e);
-            Toast.makeText(this, "加载录音列表失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            LogUtils.logError(TAG, "切换Fragment失败", e);
+            Toast.makeText(this, "切换页面失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -131,7 +140,8 @@ public class MainActivity extends AppCompatActivity {
         List<String> permissionsNeeded = new ArrayList<>();
         
         for (String permission : REQUIRED_PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, permission) != 
+                    PackageManager.PERMISSION_GRANTED) {
                 permissionsNeeded.add(permission);
                 LogUtils.d(TAG, String.format("需要申请权限: %s", permission));
             }
@@ -173,8 +183,8 @@ public class MainActivity extends AppCompatActivity {
                     PERMISSION_REQUEST_CODE);
             }
         } else {
-            LogUtils.i(TAG, "所有权限已获得，开始加载录音列表");
-            showRecordingsFragment();
+            LogUtils.i(TAG, "所有权限已获得，显示概览页面");
+            showFragment(new OverviewFragment());
         }
         LogUtils.logMethodExit(TAG, "checkPermissions");
     }
@@ -197,8 +207,8 @@ public class MainActivity extends AppCompatActivity {
             }
             
             if (deniedPermissions.isEmpty()) {
-                LogUtils.i(TAG, "所有权限已获得，开始加载录音列表");
-                showRecordingsFragment();
+                LogUtils.i(TAG, "所有权限已获得，显示概览页面");
+                showFragment(new OverviewFragment());
             } else {
                 LogUtils.w(TAG, String.format("有%d个权限被拒绝", deniedPermissions.size()));
                 StringBuilder message = new StringBuilder("需要以下权限才能正常运行：\n");
@@ -210,16 +220,10 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, message.toString(), Toast.LENGTH_LONG).show();
                 
                 new AlertDialog.Builder(this)
-                    .setTitle("需要权限")
-                    .setMessage("应用需要这些权限才能正常工作。是否重新申请权限？")
-                    .setPositiveButton("重试", (dialog, which) -> {
-                        LogUtils.d(TAG, "用户选择重试申请权限");
-                        checkPermissions();
-                    })
-                    .setNegativeButton("退出", (dialog, which) -> {
-                        LogUtils.w(TAG, "用户放弃申请权限，退出应用");
-                        finish();
-                    })
+                    .setTitle("权限被拒绝")
+                    .setMessage("没有必要的权限，应用无法正常工作。")
+                    .setPositiveButton("重试", (dialog, which) -> checkPermissions())
+                    .setNegativeButton("退出", (dialog, which) -> finish())
                     .setCancelable(false)
                     .show();
             }
@@ -230,38 +234,18 @@ public class MainActivity extends AppCompatActivity {
     private String getPermissionName(String permission) {
         switch (permission) {
             case Manifest.permission.READ_EXTERNAL_STORAGE:
-                return "读取存储权限";
-            case Manifest.permission.WRITE_EXTERNAL_STORAGE:
-                return "写入存储权限";
-            case Manifest.permission.READ_CALL_LOG:
-                return "读取通话记录权限";
             case Manifest.permission.READ_MEDIA_AUDIO:
-                return "读取音频文件权限";
+                return "存储权限";
+            case Manifest.permission.READ_CALL_LOG:
+                return "通话记录权限";
             default:
                 return permission;
         }
     }
 
-    private void startDebugActivity() {
-        Intent intent = new Intent(this, DatabaseDebugActivity.class);
-        startActivity(intent);
-        // 使用新的Activity转场API
-        overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 
-            R.anim.slide_in_right, R.anim.slide_out_left);
-    }
-
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_debug) {
-            startDebugActivity();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+    protected void onDestroy() {
+        super.onDestroy();
+        LogUtils.i(TAG, "MainActivity销毁");
     }
 }

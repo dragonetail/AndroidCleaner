@@ -200,6 +200,23 @@ dependencies {
     androidTestImplementation("androidx.test:rules:1.5.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
+
+    // ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    
+    // Material Design
+    implementation("com.google.android.material:material:1.10.0")
+
+    // GridLayout
+    implementation("androidx.gridlayout:gridlayout:1.0.0")
+
+    // MPAndroidChart for charts
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // Gson for JSON
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 idea {
