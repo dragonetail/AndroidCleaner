@@ -91,5 +91,26 @@
         "ignorePatterns": [
             "The declared package \"com.blackharry.androidcleaner\" does not match the expected package"
         ]
+    },
+    "development": {
+        "principles": {
+            "featureControl": {
+                "allowedChanges": [
+                    "bugfix",
+                    "robustness",
+                    "logging",
+                    "documentation"
+                ],
+                "restrictedChanges": [
+                    "newFeature",
+                    "designChange"
+                ]
+            },
+            "changeProcess": {
+                "newFeatures": "userInitiated",
+                "requireApproval": true,
+                "preserveDesign": true
+            }
+        }
     }
 } 

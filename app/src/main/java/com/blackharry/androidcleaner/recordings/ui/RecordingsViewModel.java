@@ -2,9 +2,12 @@ package com.blackharry.androidcleaner.recordings.ui;
 
 import android.app.Application;
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
+import android.media.audiofx.Visualizer;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.SavedStateHandle;
 import com.blackharry.androidcleaner.common.exception.AppException;
 import com.blackharry.androidcleaner.common.exception.ErrorCode;
 import com.blackharry.androidcleaner.recordings.data.RecordingEntity;
@@ -19,26 +22,37 @@ import java.util.concurrent.TimeUnit;
 
 public class RecordingsViewModel extends AndroidViewModel {
     private static final String TAG = "RecordingsViewModel";
-    // 全局静态变量，用于跟踪当前正在播放的ViewModel实例
+    private static final int PAGE_SIZE = 20;
+    private static final int PRELOAD_DISTANCE = 10;
+    private static final int CAPTURE_SIZE = 1024;
+    
     private static RecordingsViewModel currentPlayingViewModel;
     
+    private final SavedStateHandle savedStateHandle;
     private final RecordingRepository repository;
     private final ScheduledExecutorService scheduledExecutor;
     private final MutableLiveData<List<RecordingEntity>> recordings = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> error = new MutableLiveData<>();
     private final MutableLiveData<PlaybackState> playbackState = new MutableLiveData<>();
+    private final MutableLiveData<float[]> waveformData = new MutableLiveData<>();
     
     private MediaPlayer mediaPlayer;
+    private Visualizer visualizer;
     private ScheduledFuture<?> progressUpdateTask;
     private String currentPlayingFilePath;
+    private float currentSpeed = 1.0f;
+    private int currentPage = 0;
+    private boolean isLastPage = false;
+    private boolean isPreloading = false;
 
-    public RecordingsViewModel(Application application) {
+    public RecordingsViewModel(Application application, SavedStateHandle savedStateHandle) {
         super(application);
         LogUtils.logMethodEnter(TAG, "RecordingsViewModel");
+        this.savedStateHandle = savedStateHandle;
         repository = RecordingRepository.getInstance(application);
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-        loadRecordings();
+        loadRecordings(true);
     }
 
     public LiveData<List<RecordingEntity>> getRecordings() {
@@ -57,14 +71,41 @@ public class RecordingsViewModel extends AndroidViewModel {
         return playbackState;
     }
 
-    public void loadRecordings() {
+    public LiveData<float[]> getWaveformData() {
+        return waveformData;
+    }
+
+    public void loadRecordings(boolean refresh) {
         LogUtils.logMethodEnter(TAG, "loadRecordings");
-        isLoading.setValue(true);
+        if (refresh) {
+            currentPage = 0;
+            isLastPage = false;
+        }
+        if (isLastPage || isLoading.getValue()) return;
         
+        isLoading.setValue(true);
         repository.getRecordings(new RecordingRepository.Callback<List<RecordingEntity>>() {
             @Override
             public void onSuccess(List<RecordingEntity> result) {
-                recordings.postValue(result);
+                List<RecordingEntity> pagedResult = result.subList(
+                    currentPage * PAGE_SIZE,
+                    Math.min((currentPage + 1) * PAGE_SIZE, result.size())
+                );
+                if (pagedResult.size() < PAGE_SIZE) {
+                    isLastPage = true;
+                }
+                if (refresh) {
+                    recordings.postValue(pagedResult);
+                } else {
+                    List<RecordingEntity> currentList = recordings.getValue();
+                    if (currentList != null) {
+                        currentList.addAll(pagedResult);
+                        recordings.postValue(currentList);
+                    } else {
+                        recordings.postValue(pagedResult);
+                    }
+                }
+                currentPage++;
                 isLoading.postValue(false);
             }
 
@@ -79,113 +120,50 @@ public class RecordingsViewModel extends AndroidViewModel {
         });
     }
 
-    public void loadRecordingsAfter(long startTime) {
-        LogUtils.logMethodEnter(TAG, "loadRecordingsAfter");
-        isLoading.setValue(true);
-        
-        repository.getRecordingsAfter(startTime, new RecordingRepository.Callback<List<RecordingEntity>>() {
-            @Override
-            public void onSuccess(List<RecordingEntity> result) {
-                recordings.postValue(result);
-                isLoading.postValue(false);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                String errorMessage = e instanceof AppException ? 
-                    ((AppException) e).getErrorCode().getMessage() : 
-                    "获取录音列表失败";
-                error.postValue(errorMessage);
-                isLoading.postValue(false);
-            }
-        });
-    }
-
-    public void loadRecordingsBySize(long minSize, long maxSize) {
-        LogUtils.logMethodEnter(TAG, "loadRecordingsBySize");
-        isLoading.setValue(true);
-        
-        repository.getRecordingsBySize(minSize, maxSize, new RecordingRepository.Callback<List<RecordingEntity>>() {
-            @Override
-            public void onSuccess(List<RecordingEntity> result) {
-                recordings.postValue(result);
-                isLoading.postValue(false);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                String errorMessage = e instanceof AppException ? 
-                    ((AppException) e).getErrorCode().getMessage() : 
-                    "获取录音列表失败";
-                error.postValue(errorMessage);
-                isLoading.postValue(false);
-            }
-        });
-    }
-
-    public void deleteRecordings(List<String> filePaths) {
-        LogUtils.logMethodEnter(TAG, "deleteRecordings");
-        
-        // 停止当前播放
-        if (currentPlayingFilePath != null && filePaths.contains(currentPlayingFilePath)) {
-            stopPlayback();
+    public void checkPreload(int position) {
+        if (position >= recordings.getValue().size() - PRELOAD_DISTANCE && !isPreloading) {
+            isPreloading = true;
+            loadRecordings(false);
+            isPreloading = false;
         }
-
-        repository.deleteRecordings(filePaths, new RecordingRepository.Callback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                loadRecordings();
-            }
-
-            @Override
-            public void onError(Exception e) {
-                String errorMessage = e instanceof AppException ? 
-                    ((AppException) e).getErrorCode().getMessage() : 
-                    "删除录音失败";
-                error.postValue(errorMessage);
-            }
-        });
     }
 
     public void playRecording(String filePath) {
         LogUtils.logMethodEnter(TAG, "playRecording");
         
         try {
-            // 检查文件是否存在
             if (!new java.io.File(filePath).exists()) {
                 LogUtils.e(TAG, "录音文件不存在: " + filePath);
                 error.postValue("录音文件不存在");
-                stopPlayback(); // 确保停止当前播放
+                stopPlayback();
                 return;
             }
 
-            // 如果是同一个文件，且正在播放，则暂停
             if (filePath.equals(currentPlayingFilePath) && mediaPlayer != null && mediaPlayer.isPlaying()) {
                 pausePlayback();
                 return;
             }
 
-            // 如果有其他ViewModel正在播放，先停止它
             if (currentPlayingViewModel != null && currentPlayingViewModel != this) {
                 currentPlayingViewModel.stopPlayback();
             }
-            
-            // 如果当前有播放，先停止
-            if (mediaPlayer != null) {
-                stopPlayback();
-            }
-
-            // 开始新的播放
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(filePath);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-            
-            // 更新全局状态
-            currentPlayingFilePath = filePath;
             currentPlayingViewModel = this;
 
-            // 开始进度更新任务
+            if (!filePath.equals(currentPlayingFilePath) || mediaPlayer == null) {
+                releaseMediaPlayer();
+                mediaPlayer = new MediaPlayer();
+                mediaPlayer.setDataSource(filePath);
+                mediaPlayer.prepare();
+                currentPlayingFilePath = filePath;
+                setupVisualizer();
+            }
+
+            PlaybackParams params = new PlaybackParams();
+            params.setSpeed(currentSpeed);
+            mediaPlayer.setPlaybackParams(params);
+
+            mediaPlayer.start();
+
             if (progressUpdateTask != null) {
                 progressUpdateTask.cancel(true);
             }
@@ -200,12 +178,10 @@ public class RecordingsViewModel extends AndroidViewModel {
                 }
             }, 0, 100, TimeUnit.MILLISECONDS);
 
-            // 设置播放完成监听器
             mediaPlayer.setOnCompletionListener(mp -> {
                 stopPlayback();
             });
 
-            // 设置错误监听器
             mediaPlayer.setOnErrorListener((mp, what, extra) -> {
                 LogUtils.e(TAG, String.format("播放错误: what=%d, extra=%d", what, extra));
                 error.postValue("播放出错，请重试");
@@ -215,121 +191,140 @@ public class RecordingsViewModel extends AndroidViewModel {
 
         } catch (IOException e) {
             LogUtils.e(TAG, "播放录音失败", e);
-            error.postValue("无法访问录音文件，请检查存储权限");
-            stopPlayback();
-        } catch (Exception e) {
-            LogUtils.e(TAG, "播放录音失败", e);
-            error.postValue("播放录音失败：" + e.getMessage());
+            error.postValue("播放录音失败");
             stopPlayback();
         }
     }
 
     public void pausePlayback() {
         LogUtils.logMethodEnter(TAG, "pausePlayback");
-        
-        try {
-            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-                mediaPlayer.pause();
-                updatePlaybackState();
-            }
-        } catch (Exception e) {
-            LogUtils.e(TAG, "暂停播放失败", e);
-            error.postValue("暂停播放失败：" + e.getMessage());
-            stopPlayback();
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            playbackState.setValue(new PlaybackState(
+                currentPlayingFilePath,
+                mediaPlayer.getCurrentPosition(),
+                mediaPlayer.getDuration(),
+                false
+            ));
         }
     }
 
     public void resumePlayback() {
         LogUtils.logMethodEnter(TAG, "resumePlayback");
-        
-        try {
-            if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
-                mediaPlayer.start();
-                updatePlaybackState();
-            }
-        } catch (Exception e) {
-            LogUtils.e(TAG, "恢复播放失败", e);
-            error.postValue("恢复播放失败：" + e.getMessage());
-            stopPlayback();
+        if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
+            mediaPlayer.start();
+            playbackState.setValue(new PlaybackState(
+                currentPlayingFilePath,
+                mediaPlayer.getCurrentPosition(),
+                mediaPlayer.getDuration(),
+                true
+            ));
         }
     }
 
     public void stopPlayback() {
         LogUtils.logMethodEnter(TAG, "stopPlayback");
-        
-        try {
-            if (progressUpdateTask != null) {
-                progressUpdateTask.cancel(true);
-                progressUpdateTask = null;
-            }
-
-            if (mediaPlayer != null) {
-                mediaPlayer.stop();
-                mediaPlayer.release();
-                mediaPlayer = null;
-            }
-
-            currentPlayingFilePath = null;
-            if (currentPlayingViewModel == this) {
-                currentPlayingViewModel = null;
-            }
-            playbackState.postValue(null);
-        } catch (Exception e) {
-            LogUtils.e(TAG, "停止播放失败", e);
-            error.postValue("停止播放失败：" + e.getMessage());
-            // 即使停止失败，也要确保资源被释放
-            try {
-                if (mediaPlayer != null) {
-                    mediaPlayer.release();
-                    mediaPlayer = null;
-                }
-                if (progressUpdateTask != null) {
-                    progressUpdateTask.cancel(true);
-                    progressUpdateTask = null;
-                }
-                currentPlayingFilePath = null;
-                if (currentPlayingViewModel == this) {
-                    currentPlayingViewModel = null;
-                }
-                playbackState.postValue(null);
-            } catch (Exception ex) {
-                LogUtils.e(TAG, "清理播放资源失败", ex);
-            }
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.reset();
+            playbackState.setValue(null);
+        }
+        releaseVisualizer();
+        if (progressUpdateTask != null) {
+            progressUpdateTask.cancel(true);
+            progressUpdateTask = null;
+        }
+        currentPlayingFilePath = null;
+        if (currentPlayingViewModel == this) {
+            currentPlayingViewModel = null;
         }
     }
 
-    private void updatePlaybackState() {
-        if (mediaPlayer != null && currentPlayingFilePath != null) {
-            playbackState.postValue(new PlaybackState(
+    public void seekTo(int progress) {
+        LogUtils.logMethodEnter(TAG, "seekTo");
+        if (mediaPlayer != null) {
+            mediaPlayer.seekTo(progress);
+            playbackState.setValue(new PlaybackState(
                 currentPlayingFilePath,
-                mediaPlayer.getCurrentPosition(),
+                progress,
                 mediaPlayer.getDuration(),
                 mediaPlayer.isPlaying()
             ));
         }
     }
 
-    public void seekTo(long position) {
-        LogUtils.logMethodEnter(TAG, "seekTo");
+    public void setPlaybackSpeed(float speed) {
+        LogUtils.logMethodEnter(TAG, "setPlaybackSpeed");
+        if (mediaPlayer != null && (speed == 1.0f || speed == 2.0f)) {
+            currentSpeed = speed;
+            PlaybackParams params = new PlaybackParams();
+            params.setSpeed(speed);
+            mediaPlayer.setPlaybackParams(params);
+        }
+    }
+
+    private void setupVisualizer() {
+        LogUtils.logMethodEnter(TAG, "setupVisualizer");
+        if (mediaPlayer == null) return;
+
+        releaseVisualizer();
         
         try {
-            if (mediaPlayer != null) {
-                mediaPlayer.seekTo((int) position);
-                updatePlaybackState();
-                LogUtils.i(TAG, String.format("跳转到：%d ms", position));
-            }
+            visualizer = new Visualizer(mediaPlayer.getAudioSessionId());
+            visualizer.setCaptureSize(CAPTURE_SIZE);
+            
+            visualizer.setDataCaptureListener(
+                new Visualizer.OnDataCaptureListener() {
+                    @Override
+                    public void onWaveFormDataCapture(Visualizer visualizer, 
+                            byte[] waveform, int samplingRate) {
+                        float[] normalizedData = new float[waveform.length];
+                        for (int i = 0; i < waveform.length; i++) {
+                            normalizedData[i] = ((float) (waveform[i] & 0xFF)) / 128.0f;
+                        }
+                        waveformData.postValue(normalizedData);
+                    }
+
+                    @Override
+                    public void onFftDataCapture(Visualizer visualizer, 
+                            byte[] fft, int samplingRate) {
+                        // 不需要处理FFT数据
+                    }
+                }, 
+                Visualizer.getMaxCaptureRate() / 2, 
+                true, 
+                false
+            );
+            
+            visualizer.setEnabled(true);
         } catch (Exception e) {
-            LogUtils.e(TAG, "跳转失败", e);
-            error.postValue("跳转失败：" + e.getMessage());
-            stopPlayback();
+            LogUtils.e(TAG, "设置音频可视化失败", e);
+        }
+    }
+
+    private void releaseVisualizer() {
+        LogUtils.logMethodEnter(TAG, "releaseVisualizer");
+        if (visualizer != null) {
+            visualizer.setEnabled(false);
+            visualizer.release();
+            visualizer = null;
+        }
+    }
+
+    private void releaseMediaPlayer() {
+        LogUtils.logMethodEnter(TAG, "releaseMediaPlayer");
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
         }
     }
 
     @Override
     protected void onCleared() {
         super.onCleared();
-        LogUtils.i(TAG, "ViewModel销毁");
+        LogUtils.logMethodEnter(TAG, "onCleared");
         stopPlayback();
+        releaseMediaPlayer();
         scheduledExecutor.shutdown();
     }
 

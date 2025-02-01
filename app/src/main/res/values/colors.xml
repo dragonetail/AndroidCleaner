@@ -7,20 +7,23 @@
     <!-- 主题颜色 -->
     <color name="primary">#2196F3</color>
     <color name="primary_dark">#1976D2</color>
+    <color name="primary_light">#BBDEFB</color>
     <color name="accent">#FF4081</color>
-    <color name="accent_dark">#F50057</color>
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="icons">#FFFFFF</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="transparent">#00000000</color>
 
     <!-- 背景颜色 -->
-    <color name="background">#F5F5F5</color>
+    <color name="background">#FAFAFA</color>
     <color name="surface">#FFFFFF</color>
 
     <!-- 文本颜色 -->
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
     <color name="text_tertiary">#C7C7CC</color>
-
-    <!-- 分割线颜色 -->
-    <color name="divider">#E0E0E0</color>
+    <color name="text_hint">#9E9E9E</color>
 
     <!-- 底部导航栏颜色 -->
     <color name="nav_item_selected">@android:color/white</color>
@@ -31,7 +34,7 @@
 
     <!-- 状态颜色 -->
     <color name="success">#34C759</color>
-    <color name="error">#FF3B30</color>
+    <color name="error">#B00020</color>
     <color name="warning">#FF9500</color>
     <color name="info">#5856D6</color>
 
@@ -47,4 +50,9 @@
     <!-- 进度条颜色 -->
     <color name="progress_track">#E0E0E0</color>
     <color name="progress_indicator">@color/primary</color>
+    <color name="progress_secondary">#BBDEFB</color>
+
+    <!-- 波形图颜色 -->
+    <color name="waveform_bar">#BBDEFB</color>
+    <color name="waveform_progress">#2196F3</color>
 </resources>

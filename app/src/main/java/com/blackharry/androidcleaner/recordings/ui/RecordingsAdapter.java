@@ -19,6 +19,7 @@ public class RecordingsAdapter extends ListAdapter<RecordingEntity, RecordingsAd
     private static final String TAG = "RecordingsAdapter";
     private final RecordingClickListener listener;
     private final Set<String> selectedItems = new HashSet<>();
+    private boolean isSelectionMode = false;
 
     public RecordingsAdapter(RecordingClickListener listener) {
         super(new DiffUtil.ItemCallback<RecordingEntity>() {
@@ -64,34 +65,59 @@ public class RecordingsAdapter extends ListAdapter<RecordingEntity, RecordingsAd
             listener.onPlayPauseClick(recording);
         });
 
-        // 设置项目点击事件 - 不执行播放，只用于选择
+        // 设置项目点击事件
         holder.itemView.setOnClickListener(v -> {
-            toggleSelection(recording.getFilePath());
+            if (isSelectionMode) {
+                toggleSelection(recording.getFilePath());
+            } else {
+                listener.onRecordingClick(recording);
+            }
         });
 
-        // 设置长按事件 - 用于选择操作
+        // 设置长按事件
         holder.itemView.setOnLongClickListener(v -> {
-            toggleSelection(recording.getFilePath());
+            if (!isSelectionMode) {
+                isSelectionMode = true;
+                toggleSelection(recording.getFilePath());
+            }
             return true;
         });
+
+        // 设置选中状态的视觉反馈
+        holder.itemView.setActivated(selectedItems.contains(recording.getFilePath()));
     }
 
     public void toggleSelection(String filePath) {
         if (selectedItems.contains(filePath)) {
             selectedItems.remove(filePath);
+            if (selectedItems.isEmpty()) {
+                isSelectionMode = false;
+            }
         } else {
             selectedItems.add(filePath);
         }
         listener.onSelectionChange(selectedItems);
+        notifyDataSetChanged();
     }
 
     public void clearSelection() {
         selectedItems.clear();
+        isSelectionMode = false;
         notifyDataSetChanged();
     }
 
     public Set<String> getSelectedItems() {
         return new HashSet<>(selectedItems);
+    }
+
+    public void setSelectionMode(boolean selectionMode) {
+        if (this.isSelectionMode != selectionMode) {
+            this.isSelectionMode = selectionMode;
+            if (!selectionMode) {
+                selectedItems.clear();
+            }
+            notifyDataSetChanged();
+        }
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

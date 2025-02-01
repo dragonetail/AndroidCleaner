@@ -38,7 +38,7 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     private View normalAppBar;
     private View selectionAppBar;
     private TextView selectionCount;
-    private com.google.android.material.bottomappbar.BottomAppBar selectionBottomBar;
+    private BottomAppBar selectionBottomBar;
     private RecyclerView recordingsList;
     private Spinner timeRangeSpinner;
     private Spinner sizeRangeSpinner;
@@ -67,6 +67,7 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
             setupRecyclerView();
             setupSpinners();
             observeViewModel();
+            setupBackPressHandler();
         } catch (Exception e) {
             LogUtils.logError(TAG, "视图初始化失败", e);
         }
@@ -75,19 +76,18 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         return view;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        LogUtils.logMethodEnter(TAG, "onViewCreated");
-        
-        try {
-            initializeViews(view);
-            setupRecyclerView();
-            setupSpinners();
-            observeViewModel();
-        } catch (Exception e) {
-            LogUtils.logError(TAG, "视图初始化失败", e);
-        }
+    private void setupBackPressHandler() {
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
+            new androidx.activity.OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    if (isSelectionMode) {
+                        exitSelectionMode();
+                    } else {
+                        requireActivity().getOnBackPressedDispatcher().onBackPressed();
+                    }
+                }
+            });
     }
 
     private void initializeViews(View view) {
@@ -159,14 +159,8 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
             if (itemId == R.id.action_share) {
                 shareSelectedRecordings();
                 return true;
-            } else if (itemId == R.id.action_convert_text) {
-                Snackbar.make(requireView(), "录音转文字功能开发中", Snackbar.LENGTH_SHORT).show();
-                return true;
             } else if (itemId == R.id.action_delete) {
                 deleteSelectedRecordings();
-                return true;
-            } else if (itemId == R.id.action_select_all) {
-                selectAllRecordings();
                 return true;
             } else if (itemId == R.id.action_more) {
                 showMoreOptions();
@@ -177,23 +171,32 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     }
 
     private void showMoreOptions() {
-        View moreButton = selectionBottomBar.findViewById(R.id.action_more);
-        PopupMenu popup = new PopupMenu(requireContext(), moreButton);
-        popup.getMenu().add(Menu.NONE, R.id.action_set_ringtone, Menu.NONE, "设置铃声");
-        popup.getMenu().add(Menu.NONE, R.id.action_details, Menu.NONE, "详情");
-        popup.getMenu().add(Menu.NONE, R.id.action_rename, Menu.NONE, "重命名");
+        LogUtils.logMethodEnter(TAG, "showMoreOptions");
+        
+        PopupMenu popup = new PopupMenu(requireContext(), selectionBottomBar);
+        popup.getMenu().add(Menu.NONE, 1, Menu.NONE, "全选");
+        popup.getMenu().add(Menu.NONE, 2, Menu.NONE, "重命名");
+        popup.getMenu().add(Menu.NONE, 3, Menu.NONE, "详情");
+        popup.getMenu().add(Menu.NONE, 4, Menu.NONE, "添加标签");
+        popup.getMenu().add(Menu.NONE, 5, Menu.NONE, "导出");
         
         popup.setOnMenuItemClickListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.action_set_ringtone) {
-                Snackbar.make(requireView(), "设置铃声功能开发中", Snackbar.LENGTH_SHORT).show();
-                return true;
-            } else if (itemId == R.id.action_details) {
-                showRecordingDetails();
-                return true;
-            } else if (itemId == R.id.action_rename) {
-                Snackbar.make(requireView(), "重命名功能开发中", Snackbar.LENGTH_SHORT).show();
-                return true;
+            switch (item.getItemId()) {
+                case 1:
+                    selectAllRecordings();
+                    return true;
+                case 2:
+                    // TODO: 实现重命名功能
+                    return true;
+                case 3:
+                    showRecordingDetails();
+                    return true;
+                case 4:
+                    // TODO: 实现标签功能
+                    return true;
+                case 5:
+                    // TODO: 实现导出功能
+                    return true;
             }
             return false;
         });
@@ -202,33 +205,72 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     }
 
     private void enterSelectionMode() {
+        LogUtils.logMethodEnter(TAG, "enterSelectionMode");
         isSelectionMode = true;
-        normalAppBar.setVisibility(View.GONE);
-        selectionAppBar.setVisibility(View.VISIBLE);
-        selectionBottomNav.setVisibility(View.VISIBLE);
-        updateSelectionTitle();
-
-        // 处理返回键
-        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), 
-            new androidx.activity.OnBackPressedCallback(true) {
-                @Override
-                public void handleOnBackPressed() {
-                    exitSelectionMode();
-                }
+        
+        normalAppBar.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction(() -> {
+                normalAppBar.setVisibility(View.GONE);
+                selectionAppBar.setVisibility(View.VISIBLE);
+                selectionAppBar.setAlpha(0f);
+                selectionAppBar.animate()
+                    .alpha(1f)
+                    .setDuration(200);
             });
+        
+        selectionBottomBar.setVisibility(View.VISIBLE);
+        selectionBottomBar.setTranslationY(selectionBottomBar.getHeight());
+        selectionBottomBar.animate()
+            .translationY(0f)
+            .setDuration(200);
+        
+        updateSelectionTitle();
+        adapter.setSelectionMode(true);
+        adapter.notifyDataSetChanged();
     }
 
     private void exitSelectionMode() {
+        LogUtils.logMethodEnter(TAG, "exitSelectionMode");
         isSelectionMode = false;
-        normalAppBar.setVisibility(View.VISIBLE);
-        selectionAppBar.setVisibility(View.GONE);
-        selectionBottomNav.setVisibility(View.GONE);
+        
+        selectionAppBar.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction(() -> {
+                selectionAppBar.setVisibility(View.GONE);
+                normalAppBar.setVisibility(View.VISIBLE);
+                normalAppBar.setAlpha(0f);
+                normalAppBar.animate()
+                    .alpha(1f)
+                    .setDuration(200);
+            });
+        
+        selectionBottomBar.animate()
+            .translationY(selectionBottomBar.getHeight())
+            .setDuration(200)
+            .withEndAction(() -> selectionBottomBar.setVisibility(View.GONE));
+        
+        adapter.setSelectionMode(false);
         adapter.clearSelection();
+        adapter.notifyDataSetChanged();
     }
 
     private void updateSelectionTitle() {
         int count = adapter.getSelectedItems().size();
         selectionCount.setText(String.format("已选择 %d 项", count));
+        
+        Menu menu = selectionBottomBar.getMenu();
+        menu.findItem(R.id.action_share).setEnabled(count > 0);
+        menu.findItem(R.id.action_delete).setEnabled(count > 0);
+        menu.findItem(R.id.action_more).setEnabled(count > 0);
+        
+        if (count > 0) {
+            selectionBottomBar.setElevation(8f);
+        } else {
+            selectionBottomBar.setElevation(0f);
+        }
     }
 
     private void setupRecyclerView() {
@@ -246,7 +288,7 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(
             requireContext(),
             android.R.layout.simple_spinner_item,
-            new String[]{"全部时间", "最近一周", "最近一月", "最近三月"}
+            new String[]{"全部时间", "今天", "最近7天", "最近30天", "最近90天"}
         );
         timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         timeRangeSpinner.setAdapter(timeAdapter);
@@ -255,7 +297,7 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         ArrayAdapter<String> sizeAdapter = new ArrayAdapter<>(
             requireContext(),
             android.R.layout.simple_spinner_item,
-            new String[]{"全部大小", "小于1MB", "1MB-10MB", "大于10MB"}
+            new String[]{"全部大小", "小于1MB", "1-10MB", "10-100MB", "大于100MB"}
         );
         sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sizeRangeSpinner.setAdapter(sizeAdapter);
@@ -288,7 +330,7 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
                     if (error.contains("文件不存在")) {
                         builder.setMessage(error + "\n\n建议：点击刷新按钮更新录音列表")
                                .setPositiveButton("刷新", (dialog, which) -> {
-                                   viewModel.loadRecordings();
+                                   viewModel.loadRecordings(true);
                                })
                                .setNegativeButton("取消", null);
                     } else if (error.contains("存储权限")) {
@@ -314,6 +356,13 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
                     adapter.notifyDataSetChanged();
                 }
             });
+
+            viewModel.getWaveformData().observe(getViewLifecycleOwner(), waveformData -> {
+                // 波形数据更新时，通过重新提交列表来刷新UI
+                if (waveformData != null) {
+                    adapter.notifyDataSetChanged();
+                }
+            });
         } catch (Exception e) {
             LogUtils.logError(TAG, "数据观察设置失败", e);
             new MaterialAlertDialogBuilder(requireContext())
@@ -327,29 +376,46 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     @Override
     public void onRecordingClick(RecordingEntity recording) {
         LogUtils.logMethodEnter(TAG, "onRecordingClick");
-        viewModel.playRecording(recording.getFilePath());
+        if (!isSelectionMode) {
+            // 播放录音
+            viewModel.playRecording(recording.getFilePath());
+        }
+        LogUtils.logMethodExit(TAG, "onRecordingClick");
     }
 
     @Override
     public void onPlayPauseClick(RecordingEntity recording) {
         LogUtils.logMethodEnter(TAG, "onPlayPauseClick");
-        if (viewModel.getPlaybackState().getValue() != null &&
-            viewModel.getPlaybackState().getValue().isPlaying) {
-            viewModel.pausePlayback();
-        } else {
-            viewModel.resumePlayback();
-        }
+        viewModel.playRecording(recording.getFilePath());
+        LogUtils.logMethodExit(TAG, "onPlayPauseClick");
     }
 
     @Override
     public void onSelectionChange(Set<String> selectedItems) {
         LogUtils.logMethodEnter(TAG, "onSelectionChange");
-        if (!isSelectionMode && !selectedItems.isEmpty()) {
-            enterSelectionMode();
-        } else if (isSelectionMode && selectedItems.isEmpty()) {
+        if (selectedItems.isEmpty()) {
             exitSelectionMode();
+        } else if (!isSelectionMode) {
+            enterSelectionMode();
         }
-        updateSelectionTitle();
+        updateSelectionTitle(selectedItems.size());
+        LogUtils.logMethodExit(TAG, "onSelectionChange");
+    }
+
+    private void updateSelectionTitle(int count) {
+        if (selectionCount != null) {
+            selectionCount.setText(String.format("已选择 %d 项", count));
+        }
+    }
+
+    public void onSeekTo(RecordingEntity recording, int progress) {
+        LogUtils.logMethodEnter(TAG, "onSeekTo");
+        viewModel.seekTo(progress);
+    }
+
+    public void onSpeedChange(RecordingEntity recording, float speed) {
+        LogUtils.logMethodEnter(TAG, "onSpeedChange");
+        viewModel.setPlaybackSpeed(speed);
     }
 
     @Override
@@ -368,17 +434,24 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     }
 
     private void shareSelectedRecordings() {
+        LogUtils.logMethodEnter(TAG, "shareSelectedRecordings");
+        
         Set<String> selectedItems = adapter.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             ArrayList<Uri> uris = new ArrayList<>();
-            for (String path : selectedItems) {
-                uris.add(Uri.fromFile(new File(path)));
+            for (String filePath : selectedItems) {
+                File file = new File(filePath);
+                if (file.exists()) {
+                    uris.add(Uri.fromFile(file));
+                }
             }
             
-            Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-            shareIntent.setType("audio/*");
-            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-            startActivity(Intent.createChooser(shareIntent, "分享录音"));
+            if (!uris.isEmpty()) {
+                Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                shareIntent.setType("audio/*");
+                shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                startActivity(Intent.createChooser(shareIntent, "分享录音"));
+            }
         }
     }
 
@@ -389,7 +462,14 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
                 .setTitle("删除录音")
                 .setMessage(String.format("确定要删除选中的%d个录音文件吗？", selectedItems.size()))
                 .setPositiveButton("删除", (dialog, which) -> {
-                    viewModel.deleteRecordings(new ArrayList<>(selectedItems));
+                    // 删除录音
+                    for (String filePath : selectedItems) {
+                        File file = new File(filePath);
+                        if (file.exists()) {
+                            file.delete();
+                        }
+                    }
+                    viewModel.loadRecordings(true);
                     exitSelectionMode();
                 })
                 .setNegativeButton("取消", null)

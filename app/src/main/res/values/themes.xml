@@ -14,7 +14,7 @@
         
         <!-- 次要颜色 -->
         <item name="colorSecondary">@color/accent</item>
-        <item name="colorSecondaryVariant">@color/accent_dark</item>
+        <item name="colorSecondaryVariant">@color/primary_dark</item>
         <item name="colorOnSecondary">@color/white</item>
         
         <!-- 状态栏颜色 -->
