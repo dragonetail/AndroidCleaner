@@ -45,7 +45,7 @@ public interface ContactDao {
     void deleteAll();
 
     @Query("SELECT COUNT(*) FROM contacts WHERE isDeleted = 0")
-    int getCount();
+    int getContactCount();
 
     @Query("SELECT COUNT(*) FROM contacts WHERE isSafeZone = 1 AND isDeleted = 0")
     int getCountInSafeZone();

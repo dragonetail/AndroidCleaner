@@ -75,7 +75,7 @@ public interface CallDao {
     void updateRecordingPath(long id, String recordingPath);
 
     @Query("SELECT COUNT(*) FROM calls")
-    int getCount();
+    int getCallCount();
 
     @Query("SELECT COUNT(*) FROM calls WHERE recording_path IS NOT NULL")
     int getCountWithRecordings();
@@ -84,5 +84,5 @@ public interface CallDao {
     long getTotalRecordingSize();
 
     @Query("SELECT SUM(duration) FROM calls")
-    long getTotalDuration();
+    long getTotalCallDuration();
 } 

@@ -18,6 +18,7 @@ public class OverviewFragment extends Fragment {
     private OverviewViewModel viewModel;
     private CircularProgressIndicator storageProgress;
     private TextView storageText;
+    private TextView storageDesc;
     private TextView recordingCount;
     private TextView callCount;
     private TextView contactCount;
@@ -41,11 +42,19 @@ public class OverviewFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        LogUtils.logMethodEnter(TAG, "onResume");
+        refreshData();
+    }
+
     private void initViews(View view) {
         LogUtils.logMethodEnter(TAG, "initViews");
         
         storageProgress = view.findViewById(R.id.storage_progress);
         storageText = view.findViewById(R.id.storage_text);
+        storageDesc = view.findViewById(R.id.storage_desc);
         recordingCount = view.findViewById(R.id.recording_count);
         callCount = view.findViewById(R.id.call_count);
         contactCount = view.findViewById(R.id.contact_count);
@@ -60,6 +69,7 @@ public class OverviewFragment extends Fragment {
             viewModel.getStorageUsage().observe(getViewLifecycleOwner(), usage -> {
                 storageProgress.setProgress((int) (usage.getUsedPercentage() * 100));
                 storageText.setText(usage.getFormattedUsedSize());
+                storageDesc.setText(String.format("总空间: %s", usage.getFormattedTotalSize()));
             });
 
             // 观察统计数据
@@ -71,6 +81,15 @@ public class OverviewFragment extends Fragment {
             });
         } catch (Exception e) {
             LogUtils.logError(TAG, "数据观察设置失败", e);
+        }
+    }
+
+    private void refreshData() {
+        LogUtils.logMethodEnter(TAG, "refreshData");
+        try {
+            viewModel.refreshData();
+        } catch (Exception e) {
+            LogUtils.logError(TAG, "数据刷新失败", e);
         }
     }
 } 

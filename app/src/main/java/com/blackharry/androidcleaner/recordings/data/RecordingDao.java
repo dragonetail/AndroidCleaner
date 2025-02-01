@@ -20,10 +20,10 @@ public interface RecordingDao {
     List<RecordingEntity> getAllBySize(long minSize, long maxSize);
 
     @Query("SELECT COUNT(*) FROM recordings")
-    int getCount();
+    int getRecordingCount();
 
     @Query("SELECT SUM(fileSize) FROM recordings")
-    long getTotalSize();
+    long getTotalRecordingSize();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(RecordingEntity recording);

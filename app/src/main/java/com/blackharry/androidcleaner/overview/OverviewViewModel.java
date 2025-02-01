@@ -85,6 +85,53 @@ public class OverviewViewModel extends AndroidViewModel {
         });
     }
 
+    public void refreshData() {
+        LogUtils.logMethodEnter(TAG, "refreshData");
+        loadData();
+    }
+
+    private void loadData() {
+        LogUtils.logMethodEnter(TAG, "loadData");
+        long startTime = System.currentTimeMillis();
+        
+        executorService.execute(() -> {
+            try {
+                // 获取存储空间信息
+                long totalSize = StorageUtils.getTotalStorageSize(getApplication());
+                totalStorageSize.postValue(totalSize);
+
+                // 获取录音文件统计
+                int rCount = database.recordingDao().getRecordingCount();
+                recordingCount.postValue(rCount);
+
+                long rSize = database.recordingDao().getTotalRecordingSize();
+                recordingSize.postValue(rSize);
+
+                // 获取通话记录统计
+                int cCount = database.callDao().getCallCount();
+                callCount.postValue(cCount);
+
+                long totalDuration = database.callDao().getTotalCallDuration();
+                totalCallDuration.postValue(totalDuration);
+
+                // 获取联系人统计
+                int contactsCount = database.contactDao().getContactCount();
+                contactCount.postValue(contactsCount);
+
+                // 生成清理建议
+                generateCleanupSuggestion(rCount, rSize, cCount);
+
+                LogUtils.logPerformance(TAG, "数据加载完成", startTime);
+            } catch (Exception e) {
+                LogUtils.e(TAG, "数据加载失败", e);
+                String errorMessage = e instanceof AppException ? 
+                    ((AppException) e).getErrorCode().getMessage() : 
+                    "数据加载失败";
+                error.postValue(errorMessage);
+            }
+        });
+    }
+
     public static class StorageUsage {
         private final long usedSize;
         private final long totalSize;
@@ -100,6 +147,10 @@ public class OverviewViewModel extends AndroidViewModel {
 
         public String getFormattedUsedSize() {
             return StorageUtils.formatSize(usedSize);
+        }
+
+        public String getFormattedTotalSize() {
+            return StorageUtils.formatSize(totalSize);
         }
     }
 
@@ -144,48 +195,9 @@ public class OverviewViewModel extends AndroidViewModel {
         public String getFormattedTotalDuration() {
             long hours = totalDuration / 3600;
             long minutes = (totalDuration % 3600) / 60;
-            return String.format("%d小时%d分钟", hours, minutes);
+            long seconds = totalDuration % 60;
+            return String.format("%d小时%d分钟%d秒", hours, minutes, seconds);
         }
-    }
-
-    private void loadData() {
-        LogUtils.logMethodEnter(TAG, "loadData");
-        long startTime = System.currentTimeMillis();
-
-        executorService.execute(() -> {
-            try {
-                // 加载录音统计
-                int recordings = database.recordingDao().getCount();
-                recordingCount.postValue(recordings);
-                
-                long size = database.recordingDao().getTotalSize();
-                recordingSize.postValue(size);
-                totalStorageSize.postValue(size);
-
-                // 加载通话统计
-                int calls = database.callDao().getCount();
-                callCount.postValue(calls);
-                
-                long duration = database.callDao().getTotalDuration();
-                totalCallDuration.postValue(duration);
-
-                // 加载联系人统计
-                int contacts = database.contactDao().getCount();
-                contactCount.postValue(contacts);
-
-                // 生成清理建议
-                generateCleanupSuggestion(recordings, size, calls);
-
-                LogUtils.logPerformance(TAG, "数据加载完成", startTime);
-            } catch (Exception e) {
-                LogUtils.e(TAG, "数据加载失败", e);
-                String errorMessage = e instanceof AppException ? 
-                    ((AppException) e).getErrorCode().getMessage() : 
-                    "数据加载失败";
-                error.postValue(errorMessage);
-                throw new AppException(ErrorCode.DATABASE_ERROR, "数据加载失败", e);
-            }
-        });
     }
 
     private void generateCleanupSuggestion(int recordingCount, long totalSize, int callCount) {
@@ -207,7 +219,7 @@ public class OverviewViewModel extends AndroidViewModel {
             cleanupSuggestion.postValue(suggestion.toString().trim());
         } catch (Exception e) {
             LogUtils.e(TAG, "生成清理建议失败", e);
-            throw new AppException(ErrorCode.SYSTEM_ERROR, "生成清理建议失败", e);
+            error.postValue("生成清理建议失败");
         }
     }
 
