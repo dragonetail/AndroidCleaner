@@ -5,104 +5,83 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- 正常模式的AppBar -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/normal_app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white">
+        android:layout_height="wrap_content">
 
-        <com.google.android.material.appbar.CollapsingToolbarLayout
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+            app:title="录音文件"/>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="?attr/colorSurface">
 
-            <!-- 筛选卡片 -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
+            <Spinner
+                android:id="@+id/time_range_spinner"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp">
+                android:layout_weight="1"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+            <Spinner
+                android:id="@+id/size_range_spinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
 
-                    <!-- 时间范围选择 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+            <Spinner
+                android:id="@+id/sort_spinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+        </LinearLayout>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="时间范围"
-                            android:textAppearance="?attr/textAppearanceBody1"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
-                        <Spinner
-                            android:id="@+id/time_range_spinner"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"/>
+    <!-- 选择模式的顶部栏 -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/selection_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:visibility="gone">
 
-                    </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp">
 
-                    <!-- 大小范围选择 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="8dp">
+            <ImageButton
+                android:id="@+id/close_selection_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                android:tint="@android:color/black"
+                android:contentDescription="关闭选择模式"/>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="文件大小"
-                            android:textAppearance="?attr/textAppearanceBody1"/>
+            <TextView
+                android:id="@+id/selection_count"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"
+                android:text="已选择 0 项"/>
 
-                        <Spinner
-                            android:id="@+id/size_range_spinner"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"/>
-
-                    </LinearLayout>
-
-                    <!-- 排序方式选择 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="排序方式"
-                            android:textAppearance="?attr/textAppearanceBody1"/>
-
-                        <Spinner
-                            android:id="@+id/sort_spinner"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"/>
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
+        </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -114,73 +93,24 @@
         android:padding="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <!-- 批量操作底部栏 -->
+    <TextView
+        android:id="@+id/empty_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="没有录音文件"
+        android:textAppearance="?attr/textAppearanceBody1"
+        android:visibility="gone"/>
+
+    <!-- 选择模式的底部栏 -->
     <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bottom_action_bar"
+        android:id="@+id/selection_bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/select_all_button"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="全选"/>
-
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/delete_selected_button"
-                style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="删除所选"/>
-
-        </LinearLayout>
-
-    </com.google.android.material.bottomappbar.BottomAppBar>
-
-    <!-- 空状态提示 -->
-    <LinearLayout
-        android:id="@+id/empty_state"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="32dp"
-        android:visibility="gone">
-
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/ic_empty_recordings"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="暂无录音文件"
-            android:textAppearance="?attr/textAppearanceHeadline6"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="当前没有任何录音文件"
-            android:textAppearance="?attr/textAppearanceBody2"
-            android:textColor="?android:attr/textColorSecondary"/>
-
-    </LinearLayout>
+        android:visibility="gone"
+        app:fabAlignmentMode="end"
+        app:hideOnScroll="true"
+        app:menu="@menu/menu_recordings_selection_bottom"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout> 

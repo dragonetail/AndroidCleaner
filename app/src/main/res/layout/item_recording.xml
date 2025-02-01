@@ -5,149 +5,105 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
-    android:layout_marginVertical="4dp"
-    app:cardElevation="1dp"
-    app:cardCornerRadius="8dp"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
+    app:cardElevation="0dp"
+    app:cardCornerRadius="10dp"
+    app:strokeWidth="0.5dp"
+    app:strokeColor="#E0E0E0"
     android:foreground="?attr/selectableItemBackground">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="14dp">
 
-        <CheckBox
-            android:id="@+id/checkbox"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:visibility="gone"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/recording_icon"
-            app:layout_constraintBottom_toBottomOf="@id/recording_icon"/>
-
-        <ImageView
-            android:id="@+id/recording_icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_recording"
-            android:tint="@color/primary"
-            android:importantForAccessibility="no"
-            app:layout_constraintStart_toEndOf="@id/checkbox"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <TextView
-            android:id="@+id/recording_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="8dp"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            android:maxLines="1"
-            android:ellipsize="end"
-            app:layout_constraintStart_toEndOf="@id/recording_icon"
-            app:layout_constraintEnd_toStartOf="@id/more_button"
-            app:layout_constraintTop_toTopOf="@id/recording_icon"
-            tools:text="录音名称"/>
-
-        <TextView
-            android:id="@+id/recording_info"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textAppearance="?attr/textAppearanceBody2"
-            android:textColor="?android:attr/textColorSecondary"
-            android:maxLines="1"
-            android:ellipsize="end"
-            app:layout_constraintStart_toStartOf="@id/recording_name"
-            app:layout_constraintEnd_toEndOf="@id/recording_name"
-            app:layout_constraintTop_toBottomOf="@id/recording_name"
-            tools:text="2024-01-31 12:00 | 5分钟"/>
-
-        <ImageButton
-            android:id="@+id/more_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_more"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/more_options"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
+        <!-- 左侧信息区域 -->
         <LinearLayout
-            android:id="@+id/playback_controls"
+            android:id="@+id/left_info"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/recording_info"
+            android:layout_marginEnd="20dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toStartOf="@id/right_info"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <com.google.android.material.slider.Slider
-                android:id="@+id/playback_progress"
+            <TextView
+                android:id="@+id/recording_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:valueFrom="0.0"
-                android:valueTo="100.0"
-                android:contentDescription="@string/playback_progress"/>
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:textSize="15sp"
+                android:textColor="#2C2C2C"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="20200508_124833"/>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <TextView
+                android:id="@+id/recording_date"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/current_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?attr/textAppearanceCaption"
-                    android:textColor="?android:attr/textColorSecondary"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="00:00"/>
-
-                <TextView
-                    android:id="@+id/total_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?attr/textAppearanceCaption"
-                    android:textColor="?android:attr/textColorSecondary"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="05:00"/>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="center"
-                android:layout_marginTop="4dp">
-
-                <ImageButton
-                    android:id="@+id/play_pause_button"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_play"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/play_pause"
-                    android:padding="8dp"/>
-
-                <ImageButton
-                    android:id="@+id/stop_button"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_stop"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/stop"
-                    android:padding="8dp"
-                    android:layout_marginStart="16dp"/>
-
-            </LinearLayout>
+                android:layout_marginTop="6dp"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textSize="13sp"
+                android:textColor="#666666"
+                tools:text="2020/5/8"/>
 
         </LinearLayout>
+
+        <!-- 右侧信息区域 -->
+        <LinearLayout
+            android:id="@+id/right_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end"
+            android:layout_marginEnd="20dp"
+            app:layout_constraintEnd_toStartOf="@id/play_button"
+            app:layout_constraintTop_toTopOf="@id/left_info"
+            app:layout_constraintBottom_toBottomOf="@id/left_info">
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/recording_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textSize="13sp"
+                android:textColor="#666666"
+                tools:text="1.5MB"/>
+
+            <TextView
+                android:id="@+id/recording_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textSize="13sp"
+                android:textColor="#666666"
+                tools:text="00:17:23"/>
+
+        </LinearLayout>
+
+        <!-- 播放按钮 -->
+        <ImageButton
+            android:id="@+id/play_button"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_play_arrow"
+            android:background="@drawable/bg_play_button"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/play_pause"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

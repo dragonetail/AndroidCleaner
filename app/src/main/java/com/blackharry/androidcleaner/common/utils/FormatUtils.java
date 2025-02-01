@@ -1,10 +1,12 @@
 package com.blackharry.androidcleaner.common.utils;
 
 import android.content.Context;
+import android.text.format.DateFormat;
 import android.text.format.Formatter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class FormatUtils {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
@@ -14,11 +16,11 @@ public class FormatUtils {
     private static final long GB = MB * 1024L;
 
     public static String formatDate(long timestamp) {
-        return DATE_FORMAT.format(new Date(timestamp));
+        return DateFormat.format("yyyy/M/d", timestamp).toString();
     }
 
     public static String formatDateTime(long timestamp) {
-        return DATE_TIME_FORMAT.format(new Date(timestamp));
+        return DateFormat.format("yyyy/M/d HH:mm:ss", timestamp).toString();
     }
 
     public static String formatFileSize(Context context, long size) {
@@ -37,17 +39,19 @@ public class FormatUtils {
         }
     }
 
-    public static String formatDuration(long durationInSeconds) {
-        long hours = durationInSeconds / 3600;
-        long minutes = (durationInSeconds % 3600) / 60;
-        long seconds = durationInSeconds % 60;
-
+    public static String formatDuration(long durationMs) {
+        if (durationMs < 0) {
+            return "00:00";
+        }
+        
+        long hours = TimeUnit.MILLISECONDS.toHours(durationMs);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(durationMs) % 60;
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(durationMs) % 60;
+        
         if (hours > 0) {
-            return String.format(Locale.CHINA, "%d时%02d分%02d秒", hours, minutes, seconds);
-        } else if (minutes > 0) {
-            return String.format(Locale.CHINA, "%d分%02d秒", minutes, seconds);
+            return String.format("%02d:%02d:%02d", hours, minutes, seconds);
         } else {
-            return String.format(Locale.CHINA, "%d秒", seconds);
+            return String.format("%02d:%02d", minutes, seconds);
         }
     }
 
