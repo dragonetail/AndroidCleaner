@@ -2,26 +2,21 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/navigation_overview">
+    app:startDestination="@id/nav_overview">
 
     <fragment
-        android:id="@+id/navigation_overview"
+        android:id="@+id/nav_overview"
         android:name="com.blackharry.androidcleaner.overview.OverviewFragment"
-        android:label="概览" />
+        android:label="@string/title_overview" />
 
     <fragment
-        android:id="@+id/navigation_recordings"
+        android:id="@+id/nav_recordings"
         android:name="com.blackharry.androidcleaner.recordings.ui.RecordingsFragment"
-        android:label="录音" />
+        android:label="@string/title_recordings" />
 
     <fragment
-        android:id="@+id/navigation_calls"
-        android:name="com.blackharry.androidcleaner.calls.ui.CallsFragment"
-        android:label="通话" />
-
-    <fragment
-        android:id="@+id/navigation_contacts"
+        android:id="@+id/nav_contacts"
         android:name="com.blackharry.androidcleaner.contacts.ui.ContactsFragment"
-        android:label="联系人" />
+        android:label="@string/title_contacts" />
 
 </navigation> 

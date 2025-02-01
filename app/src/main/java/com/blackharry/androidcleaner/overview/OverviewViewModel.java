@@ -4,10 +4,12 @@ import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import com.blackharry.androidcleaner.AppDatabase;
 import com.blackharry.androidcleaner.common.exception.AppException;
 import com.blackharry.androidcleaner.common.exception.ErrorCode;
 import com.blackharry.androidcleaner.common.utils.LogUtils;
+import com.blackharry.androidcleaner.common.utils.StorageUtils;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -63,6 +65,87 @@ public class OverviewViewModel extends AndroidViewModel {
 
     public LiveData<String> getError() {
         return error;
+    }
+
+    public LiveData<StorageUsage> getStorageUsage() {
+        return Transformations.map(recordingSize, size -> {
+            long totalSize = StorageUtils.getTotalStorageSize(getApplication());
+            return new StorageUsage(size, totalSize);
+        });
+    }
+
+    public LiveData<Statistics> getStatistics() {
+        return Transformations.map(totalCallDuration, duration -> {
+            Statistics stats = new Statistics();
+            stats.setRecordingCount(recordingCount.getValue());
+            stats.setCallCount(callCount.getValue());
+            stats.setContactCount(contactCount.getValue());
+            stats.setTotalDuration(duration);
+            return stats;
+        });
+    }
+
+    public static class StorageUsage {
+        private final long usedSize;
+        private final long totalSize;
+
+        public StorageUsage(long usedSize, long totalSize) {
+            this.usedSize = usedSize;
+            this.totalSize = totalSize;
+        }
+
+        public float getUsedPercentage() {
+            return totalSize > 0 ? (float) usedSize / totalSize : 0;
+        }
+
+        public String getFormattedUsedSize() {
+            return StorageUtils.formatSize(usedSize);
+        }
+    }
+
+    public static class Statistics {
+        private int recordingCount;
+        private int callCount;
+        private int contactCount;
+        private long totalDuration;
+
+        public int getRecordingCount() {
+            return recordingCount;
+        }
+
+        public void setRecordingCount(Integer count) {
+            this.recordingCount = count != null ? count : 0;
+        }
+
+        public int getCallCount() {
+            return callCount;
+        }
+
+        public void setCallCount(Integer count) {
+            this.callCount = count != null ? count : 0;
+        }
+
+        public int getContactCount() {
+            return contactCount;
+        }
+
+        public void setContactCount(Integer count) {
+            this.contactCount = count != null ? count : 0;
+        }
+
+        public long getTotalDuration() {
+            return totalDuration;
+        }
+
+        public void setTotalDuration(Long duration) {
+            this.totalDuration = duration != null ? duration : 0;
+        }
+
+        public String getFormattedTotalDuration() {
+            long hours = totalDuration / 3600;
+            long minutes = (totalDuration % 3600) / 60;
+            return String.format("%d小时%d分钟", hours, minutes);
+        }
     }
 
     private void loadData() {
