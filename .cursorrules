@@ -1,0 +1,95 @@
+{
+    "project": {
+        "name": "AndroidCleaner",
+        "package": "com.blackharry.androidcleaner",
+        "minSdkVersion": 24,
+        "targetSdkVersion": 33
+    },
+    "architecture": {
+        "pattern": "MVVM",
+        "components": {
+            "view": {
+                "location": "*.ui",
+                "naming": "*Fragment|*Activity",
+                "baseClass": "Fragment|AppCompatActivity"
+            },
+            "viewModel": {
+                "location": "*.ui",
+                "naming": "*ViewModel",
+                "baseClass": "AndroidViewModel|ViewModel"
+            },
+            "repository": {
+                "location": "*.data",
+                "naming": "*Repository"
+            },
+            "entity": {
+                "location": "*.data",
+                "naming": "*Entity"
+            },
+            "dao": {
+                "location": "*.data",
+                "naming": "*Dao"
+            }
+        }
+    },
+    "structure": {
+        "modules": [
+            "overview",
+            "recordings",
+            "calls",
+            "contacts",
+            "common"
+        ],
+        "common": {
+            "utils": "common.utils",
+            "exception": "common.exception"
+        }
+    },
+    "coding": {
+        "style": {
+            "indentation": "4 spaces",
+            "lineLength": 100,
+            "braces": "same line"
+        },
+        "naming": {
+            "class": "PascalCase",
+            "method": "camelCase",
+            "variable": "camelCase",
+            "constant": "UPPER_SNAKE_CASE",
+            "package": "lowercase"
+        },
+        "logging": {
+            "tool": "LogUtils",
+            "levels": ["v", "d", "i", "w", "e"],
+            "format": "中文描述",
+            "methodTracing": {
+                "enter": "logMethodEnter",
+                "exit": "logMethodExit",
+                "error": "logError",
+                "performance": "logPerformance"
+            }
+        }
+    },
+    "dependencies": {
+        "androidx": {
+            "core": "latest",
+            "appcompat": "latest",
+            "lifecycle": "latest",
+            "room": "latest",
+            "navigation": "latest"
+        },
+        "material": "latest"
+    },
+    "testing": {
+        "required": true,
+        "frameworks": [
+            "JUnit",
+            "Espresso"
+        ]
+    },
+    "linting": {
+        "ignorePatterns": [
+            "The declared package \"com.blackharry.androidcleaner\" does not match the expected package"
+        ]
+    }
+} 
