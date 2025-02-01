@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
 
     private BottomNavigationView bottomNav;
     private Fragment currentFragment;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +45,9 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
 
     private void initializeToolbar() {
         LogUtils.logMethodEnter(TAG, "initializeToolbar");
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        updateTitle(R.string.title_bar_overview);
     }
 
     private void initializeBottomNavigation() {
@@ -72,19 +74,30 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
         
         if (itemId == R.id.nav_overview) {
             showFragment(new OverviewFragment());
+            updateTitle(R.string.title_bar_overview);
             return true;
         } else if (itemId == R.id.nav_recordings) {
             showFragment(new RecordingsFragment());
+            updateTitle(R.string.title_bar_recordings);
             return true;
         } else if (itemId == R.id.nav_calls) {
             showFragment(new CallsFragment());
+            updateTitle(R.string.title_bar_calls);
             return true;
         } else if (itemId == R.id.nav_contacts) {
             showFragment(new ContactsFragment());
+            updateTitle(R.string.title_bar_contacts);
             return true;
         }
         
         return false;
+    }
+
+    private void updateTitle(int titleResId) {
+        LogUtils.logMethodEnter(TAG, "updateTitle");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(titleResId);
+        }
     }
 
     private void showFragment(Fragment fragment) {

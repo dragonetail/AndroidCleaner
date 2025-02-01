@@ -52,4 +52,10 @@
     <!-- 新增字符串资源 -->
     <string name="no_calls_found">暂无通话记录</string>
     <string name="filter_calls">筛选通话记录</string>
+    
+    <!-- 标题栏标题 -->
+    <string name="title_bar_overview">录音空间清理</string>
+    <string name="title_bar_recordings">录音文件</string>
+    <string name="title_bar_calls">通话录音</string>
+    <string name="title_bar_contacts">联系人信息</string>
 </resources>
