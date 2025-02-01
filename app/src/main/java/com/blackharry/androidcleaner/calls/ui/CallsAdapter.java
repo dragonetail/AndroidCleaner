@@ -4,51 +4,42 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.ImageView;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import com.blackharry.androidcleaner.R;
 import com.blackharry.androidcleaner.calls.data.CallEntity;
 import com.blackharry.androidcleaner.common.utils.FormatUtils;
-import android.provider.CallLog;
+import com.google.android.material.card.MaterialCardView;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CallsAdapter extends ListAdapter<CallEntity, CallsAdapter.ViewHolder> {
+public class CallsAdapter extends ListAdapter<CallEntity, CallsAdapter.CallViewHolder> {
+    private static final String TAG = "CallsAdapter";
     private final OnItemClickListener listener;
     private final Set<Long> selectedItems = new HashSet<>();
 
-    public CallsAdapter(OnItemClickListener listener) {
-        super(new DiffUtil.ItemCallback<CallEntity>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull CallEntity oldItem, @NonNull CallEntity newItem) {
-                return oldItem.getId() == newItem.getId();
-            }
+    public interface OnItemClickListener {
+        void onItemClick(CallEntity call);
+        void onItemLongClick(CallEntity call);
+    }
 
-            @Override
-            public boolean areContentsTheSame(@NonNull CallEntity oldItem, @NonNull CallEntity newItem) {
-                return oldItem.getNumber().equals(newItem.getNumber()) &&
-                       oldItem.getName().equals(newItem.getName()) &&
-                       oldItem.getDate() == newItem.getDate() &&
-                       oldItem.getDuration() == newItem.getDuration() &&
-                       oldItem.getType() == newItem.getType();
-            }
-        });
+    public CallsAdapter(OnItemClickListener listener) {
+        super(new CallDiffCallback());
         this.listener = listener;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
+    public CallViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_call, parent, false);
-        return new ViewHolder(itemView);
+        return new CallViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull CallViewHolder holder, int position) {
         CallEntity call = getItem(position);
         holder.bind(call, listener, selectedItems.contains(call.getId()));
     }
@@ -78,80 +69,60 @@ public class CallsAdapter extends ListAdapter<CallEntity, CallsAdapter.ViewHolde
         return new HashSet<>(selectedItems);
     }
 
-    public interface OnItemClickListener {
-        void onItemClick(CallEntity call);
-        void onItemLongClick(CallEntity call);
-    }
+    static class CallViewHolder extends RecyclerView.ViewHolder {
+        private final MaterialCardView cardView;
+        private final TextView phoneNumber;
+        private final TextView callTime;
+        private final TextView duration;
+        private final TextView recordingInfo;
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView nameText;
-        private final TextView numberText;
-        private final TextView dateText;
-        private final TextView durationText;
-        private final ImageView typeIcon;
-        private final ImageView recordingIcon;
-        private final View itemView;
-
-        ViewHolder(View view) {
-            super(view);
-            itemView = view;
-            nameText = view.findViewById(R.id.text_name);
-            numberText = view.findViewById(R.id.text_number);
-            dateText = view.findViewById(R.id.text_date);
-            durationText = view.findViewById(R.id.text_duration);
-            typeIcon = view.findViewById(R.id.icon_type);
-            recordingIcon = view.findViewById(R.id.icon_recording);
+        public CallViewHolder(@NonNull View itemView) {
+            super(itemView);
+            cardView = (MaterialCardView) itemView;
+            phoneNumber = itemView.findViewById(R.id.phone_number);
+            callTime = itemView.findViewById(R.id.call_time);
+            duration = itemView.findViewById(R.id.duration);
+            recordingInfo = itemView.findViewById(R.id.recording_info);
         }
 
-        void bind(CallEntity call, OnItemClickListener listener, boolean isSelected) {
-            // 设置联系人名称/号码
+        public void bind(CallEntity call, OnItemClickListener listener, boolean isSelected) {
             String displayName = call.getName();
             if (displayName == null || displayName.isEmpty()) {
-                displayName = call.getNumber();
-                nameText.setVisibility(View.GONE);
-                numberText.setText(displayName);
+                phoneNumber.setText(call.getNumber());
             } else {
-                nameText.setVisibility(View.VISIBLE);
-                nameText.setText(displayName);
-                numberText.setText(call.getNumber());
+                phoneNumber.setText(String.format("%s\n%s", displayName, call.getNumber()));
+            }
+            
+            callTime.setText(FormatUtils.formatDateTime(call.getDate()));
+            duration.setText(FormatUtils.formatDuration(call.getDuration()));
+            
+            if (call.getRecordingPath() != null) {
+                recordingInfo.setVisibility(View.VISIBLE);
+                recordingInfo.setText(String.format("录音大小：%s", 
+                    FormatUtils.formatFileSize(call.getRecordingSize())));
+            } else {
+                recordingInfo.setVisibility(View.GONE);
             }
 
-            // 设置日期和时长
-            dateText.setText(FormatUtils.formatDateTime(call.getDate()));
-            durationText.setText(FormatUtils.formatDuration(call.getDuration()));
-
-            // 设置通话类型图标
-            switch (call.getType()) {
-                case CallLog.Calls.INCOMING_TYPE:
-                    typeIcon.setImageResource(R.drawable.ic_call_received);
-                    break;
-                case CallLog.Calls.OUTGOING_TYPE:
-                    typeIcon.setImageResource(R.drawable.ic_call_made);
-                    break;
-                case CallLog.Calls.MISSED_TYPE:
-                    typeIcon.setImageResource(R.drawable.ic_call_missed);
-                    break;
-                default:
-                    typeIcon.setImageResource(R.drawable.ic_call);
-            }
-
-            // 设置录音图标
-            recordingIcon.setVisibility(
-                call.getRecordingPath() != null ? View.VISIBLE : View.GONE
-            );
-
-            // 设置选中状态
-            itemView.setSelected(isSelected);
-            itemView.setBackgroundResource(
-                isSelected ? R.drawable.bg_item_selected : R.drawable.bg_item_normal
-            );
-
-            // 设置点击事件
+            cardView.setChecked(isSelected);
+            
             itemView.setOnClickListener(v -> listener.onItemClick(call));
             itemView.setOnLongClickListener(v -> {
                 listener.onItemLongClick(call);
                 return true;
             });
+        }
+    }
+
+    static class CallDiffCallback extends DiffUtil.ItemCallback<CallEntity> {
+        @Override
+        public boolean areItemsTheSame(@NonNull CallEntity oldItem, @NonNull CallEntity newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull CallEntity oldItem, @NonNull CallEntity newItem) {
+            return oldItem.equals(newItem);
         }
     }
 } 

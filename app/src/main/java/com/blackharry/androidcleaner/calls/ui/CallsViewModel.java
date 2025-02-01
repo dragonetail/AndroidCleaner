@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.blackharry.androidcleaner.common.utils.LogUtils;
 import com.blackharry.androidcleaner.calls.data.CallEntity;
@@ -14,6 +16,7 @@ import com.blackharry.androidcleaner.common.exception.AppException;
 public class CallsViewModel extends AndroidViewModel {
     private static final String TAG = "CallsViewModel";
     private final CallRepository repository;
+    private final ExecutorService executorService;
     private final MutableLiveData<List<CallEntity>> calls = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> error = new MutableLiveData<>();
@@ -22,7 +25,8 @@ public class CallsViewModel extends AndroidViewModel {
         super(application);
         LogUtils.logMethodEnter(TAG, "CallsViewModel");
         repository = CallRepository.getInstance(application);
-        LogUtils.logMethodExit(TAG, "CallsViewModel");
+        executorService = Executors.newSingleThreadExecutor();
+        loadCalls();
     }
 
     public LiveData<List<CallEntity>> getAllCalls() {
@@ -133,51 +137,19 @@ public class CallsViewModel extends AndroidViewModel {
         });
     }
 
-    public void loadCallsByType(int callType) {
-        LogUtils.logMethodEnter(TAG, "loadCallsByType");
-        isLoading.setValue(true);
-        
-        repository.getCallsByType(callType, new CallRepository.Callback<List<CallEntity>>() {
-            @Override
-            public void onSuccess(List<CallEntity> result) {
-                calls.postValue(result);
-                isLoading.postValue(false);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                String errorMessage = e instanceof AppException ? 
-                    ((AppException) e).getErrorCode().getMessage() : 
-                    "获取通话记录失败";
-                error.postValue(errorMessage);
-                isLoading.postValue(false);
-            }
-        });
-    }
-
-    public void loadCallsByNumber(String phoneNumber) {
-        LogUtils.logMethodEnter(TAG, "loadCallsByNumber");
-        isLoading.setValue(true);
-        
-        repository.getCallsByNumber(phoneNumber, new CallRepository.Callback<List<CallEntity>>() {
-            @Override
-            public void onSuccess(List<CallEntity> result) {
-                calls.postValue(result);
-                isLoading.postValue(false);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                String errorMessage = e instanceof AppException ? 
-                    ((AppException) e).getErrorCode().getMessage() : 
-                    "获取通话记录失败";
-                error.postValue(errorMessage);
-                isLoading.postValue(false);
-            }
-        });
-    }
-
     public LiveData<List<CallEntity>> getCalls() {
         return calls;
+    }
+
+    public void refreshCalls() {
+        LogUtils.logMethodEnter(TAG, "refreshCalls");
+        loadCalls();
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        LogUtils.i(TAG, "ViewModel销毁");
+        executorService.shutdown();
     }
 } 

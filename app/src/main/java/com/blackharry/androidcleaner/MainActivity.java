@@ -15,6 +15,7 @@ import com.blackharry.androidcleaner.common.utils.LogUtils;
 import com.blackharry.androidcleaner.contacts.ui.ContactsFragment;
 import com.blackharry.androidcleaner.overview.OverviewFragment;
 import com.blackharry.androidcleaner.recordings.ui.RecordingsFragment;
+import com.blackharry.androidcleaner.calls.ui.CallsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -74,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
             return true;
         } else if (itemId == R.id.nav_recordings) {
             showFragment(new RecordingsFragment());
+            return true;
+        } else if (itemId == R.id.nav_calls) {
+            showFragment(new CallsFragment());
             return true;
         } else if (itemId == R.id.nav_contacts) {
             showFragment(new ContactsFragment());

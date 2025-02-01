@@ -28,6 +28,7 @@ import androidx.appcompat.app.AlertDialog;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
+import com.google.android.material.snackbar.Snackbar;
 
 public class CallsFragment extends Fragment implements CallsAdapter.OnItemClickListener {
     private static final String TAG = "CallsFragment";
@@ -41,6 +42,7 @@ public class CallsFragment extends Fragment implements CallsAdapter.OnItemClickL
     private boolean isSelectionMode = false;
     private MenuItem selectAllMenuItem;
     private MenuItem clearSelectionMenuItem;
+    private FloatingActionButton fab;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -112,7 +114,7 @@ public class CallsFragment extends Fragment implements CallsAdapter.OnItemClickL
         emptyView = view.findViewById(R.id.text_empty);
 
         // 初始化FAB
-        FloatingActionButton fab = view.findViewById(R.id.fab);
+        fab = view.findViewById(R.id.fab);
         fab.setOnClickListener(v -> {
             LogUtils.i(TAG, "用户点击FAB");
             showFilterDialog();
@@ -136,7 +138,7 @@ public class CallsFragment extends Fragment implements CallsAdapter.OnItemClickL
         // 观察错误信息
         viewModel.getError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
-                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
+                Snackbar.make(requireView(), error, Snackbar.LENGTH_LONG).show();
             }
         });
     }
