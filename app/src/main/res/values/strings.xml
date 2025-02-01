@@ -43,6 +43,7 @@
     <string name="play_pause">播放/暂停</string>
     <string name="stop">停止</string>
     <string name="playback_progress">播放进度</string>
+    <string name="close">关闭</string>
     
     <!-- 录音相关 -->
     <string name="recording_duration">%1$d分%2$d秒</string>
@@ -58,4 +59,29 @@
     <string name="title_bar_recordings">录音文件</string>
     <string name="title_bar_calls">通话录音</string>
     <string name="title_bar_contacts">联系人信息</string>
+    
+    <!-- 过滤菜单 -->
+    <string name="filter">过滤</string>
+    <string name="filter_all">全部录音</string>
+    <string name="filter_deleted">已删除通话</string>
+    <string name="filter_orphaned">孤立录音</string>
+    <string name="filter_time">时间</string>
+    <string name="time_all">全部时间</string>
+    <string name="time_today">今天</string>
+    <string name="time_week">最近7天</string>
+    <string name="time_month">最近30天</string>
+    <string name="time_quarter">最近90天</string>
+
+    <string name="filter_duration">时长</string>
+    <string name="duration_1min">1分钟以内</string>
+    <string name="duration_5min">5分钟以内</string>
+    <string name="duration_30min">30分钟以内</string>
+    <string name="duration_2hour">2个小时以内</string>
+    <string name="duration_longer">更长</string>
+
+    <string name="filter_sort">排序</string>
+    <string name="sort_time_desc">时间降序</string>
+    <string name="sort_time_asc">时间升序</string>
+    <string name="sort_size_desc">大小降序</string>
+    <string name="sort_size_asc">大小升序</string>
 </resources>

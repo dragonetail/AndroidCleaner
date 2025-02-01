@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -9,42 +10,17 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/normal_app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/white">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:title="录音文件"
-            app:titleTextColor="?attr/colorOnPrimary">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="end">
-
-                <Spinner
-                    android:id="@+id/time_range_spinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"/>
-
-                <Spinner
-                    android:id="@+id/size_range_spinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"/>
-
-                <Spinner
-                    android:id="@+id/sort_spinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-            </LinearLayout>
-
-        </com.google.android.material.appbar.MaterialToolbar>
+            android:background="@android:color/white"
+            android:elevation="4dp"
+            app:title="@string/title_bar_recordings"
+            app:menu="@menu/menu_recordings_filter"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -53,13 +29,15 @@
         android:id="@+id/selection_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/white"
         android:visibility="gone">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/selection_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary">
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -73,53 +51,62 @@
                     android:layout_height="48dp"
                     android:src="@drawable/ic_close"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="关闭选择模式"/>
+                    android:contentDescription="@string/close"/>
 
                 <TextView
                     android:id="@+id/selection_count"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="18sp"
-                    android:textColor="?attr/colorOnPrimary"
-                    android:layout_marginStart="16dp"/>
+                    android:layout_marginStart="16dp"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    android:textColor="@color/text_primary"
+                    tools:text="已选择 2 项"/>
 
             </LinearLayout>
 
-        </com.google.android.material.appbar.MaterialToolbar>
+        </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- 录音列表 -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recordings_list"
+    <!-- 主要内容区域 -->
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="80dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <!-- 空状态提示 -->
-    <TextView
-        android:id="@+id/empty_state"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="暂无录音文件"
-        android:textSize="16sp"
-        android:textColor="?android:attr/textColorSecondary"
-        android:visibility="gone"/>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <!-- 选择模式的底部操作栏 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recordings_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="8dp"
+                android:paddingBottom="80dp"/>
+
+            <!-- 空状态 -->
+            <include
+                android:id="@+id/empty_state"
+                layout="@layout/empty_state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"/>
+
+        </FrameLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- 选择模式的底部工具栏 -->
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/selection_bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:visibility="gone"
         app:menu="@menu/menu_recordings_selection"
         app:fabAlignmentMode="end"
-        app:hideOnScroll="true"
-        style="@style/Widget.MaterialComponents.BottomAppBar.Colored"/>
+        android:visibility="gone"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout> 

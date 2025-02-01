@@ -40,9 +40,6 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     private TextView selectionCount;
     private BottomAppBar selectionBottomBar;
     private RecyclerView recordingsList;
-    private Spinner timeRangeSpinner;
-    private Spinner sizeRangeSpinner;
-    private Spinner sortSpinner;
     private androidx.appcompat.widget.Toolbar toolbar;
     private boolean isSelectionMode = false;
     private BottomNavigationView selectionBottomNav;
@@ -65,7 +62,7 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         try {
             initializeViews(view);
             setupRecyclerView();
-            setupSpinners();
+            setupToolbar();
             observeViewModel();
             setupBackPressHandler();
         } catch (Exception e) {
@@ -99,58 +96,73 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         selectionCount = view.findViewById(R.id.selection_count);
         selectionBottomBar = view.findViewById(R.id.selection_bottom_bar);
         recordingsList = view.findViewById(R.id.recordings_list);
-        timeRangeSpinner = view.findViewById(R.id.time_range_spinner);
-        sizeRangeSpinner = view.findViewById(R.id.size_range_spinner);
-        sortSpinner = view.findViewById(R.id.sort_spinner);
+        toolbar = view.findViewById(R.id.toolbar);
 
         view.findViewById(R.id.close_selection_button).setOnClickListener(v -> exitSelectionMode());
         setupBottomBar();
     }
 
     private void setupToolbar() {
-        toolbar.inflateMenu(R.menu.menu_recordings_selection);
-        Menu menu = toolbar.getMenu();
-        // 默认隐藏选择模式的菜单项
-        for (int i = 0; i < menu.size(); i++) {
-            menu.getItem(i).setVisible(false);
-        }
-
-        toolbar.setNavigationOnClickListener(v -> {
-            if (isSelectionMode) {
-                exitSelectionMode();
-            }
-        });
-
+        LogUtils.logMethodEnter(TAG, "setupToolbar");
+        
         toolbar.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
-            if (itemId == R.id.action_share) {
-                shareSelectedRecordings();
+            
+            // 时间过滤
+            if (itemId == R.id.time_all) {
+                viewModel.setTimeFilter(RecordingsViewModel.TimeFilter.ALL);
                 return true;
-            } else if (itemId == R.id.action_convert_text) {
-                // TODO: 实现录音转文字功能
-                Snackbar.make(requireView(), "录音转文字功能开发中", Snackbar.LENGTH_SHORT).show();
+            } else if (itemId == R.id.time_today) {
+                viewModel.setTimeFilter(RecordingsViewModel.TimeFilter.TODAY);
                 return true;
-            } else if (itemId == R.id.action_delete) {
-                deleteSelectedRecordings();
+            } else if (itemId == R.id.time_week) {
+                viewModel.setTimeFilter(RecordingsViewModel.TimeFilter.WEEK);
                 return true;
-            } else if (itemId == R.id.action_select_all) {
-                selectAllRecordings();
+            } else if (itemId == R.id.time_month) {
+                viewModel.setTimeFilter(RecordingsViewModel.TimeFilter.MONTH);
                 return true;
-            } else if (itemId == R.id.action_set_ringtone) {
-                // TODO: 实现设置铃声功能
-                Snackbar.make(requireView(), "设置铃声功能开发中", Snackbar.LENGTH_SHORT).show();
-                return true;
-            } else if (itemId == R.id.action_details) {
-                showRecordingDetails();
-                return true;
-            } else if (itemId == R.id.action_rename) {
-                // TODO: 实现重命名功能
-                Snackbar.make(requireView(), "重命名功能开发中", Snackbar.LENGTH_SHORT).show();
+            } else if (itemId == R.id.time_quarter) {
+                viewModel.setTimeFilter(RecordingsViewModel.TimeFilter.QUARTER);
                 return true;
             }
+            
+            // 时长过滤
+            else if (itemId == R.id.duration_1min) {
+                viewModel.setDurationFilter(RecordingsViewModel.DurationFilter.MIN_1);
+                return true;
+            } else if (itemId == R.id.duration_5min) {
+                viewModel.setDurationFilter(RecordingsViewModel.DurationFilter.MIN_5);
+                return true;
+            } else if (itemId == R.id.duration_30min) {
+                viewModel.setDurationFilter(RecordingsViewModel.DurationFilter.MIN_30);
+                return true;
+            } else if (itemId == R.id.duration_2hour) {
+                viewModel.setDurationFilter(RecordingsViewModel.DurationFilter.HOUR_2);
+                return true;
+            } else if (itemId == R.id.duration_longer) {
+                viewModel.setDurationFilter(RecordingsViewModel.DurationFilter.LONGER);
+                return true;
+            }
+            
+            // 排序方式
+            else if (itemId == R.id.sort_time_desc) {
+                viewModel.setSortOrder(RecordingsViewModel.SortOrder.TIME_DESC);
+                return true;
+            } else if (itemId == R.id.sort_time_asc) {
+                viewModel.setSortOrder(RecordingsViewModel.SortOrder.TIME_ASC);
+                return true;
+            } else if (itemId == R.id.sort_size_desc) {
+                viewModel.setSortOrder(RecordingsViewModel.SortOrder.SIZE_DESC);
+                return true;
+            } else if (itemId == R.id.sort_size_asc) {
+                viewModel.setSortOrder(RecordingsViewModel.SortOrder.SIZE_ASC);
+                return true;
+            }
+            
             return false;
         });
     }
+
     private void setupBottomBar() {
         LogUtils.logMethodEnter(TAG, "setupBottomBar");
         
@@ -279,37 +291,6 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         adapter = new RecordingsAdapter(this);
         recordingsList.setAdapter(adapter);
         recordingsList.setLayoutManager(new LinearLayoutManager(requireContext()));
-    }
-
-    private void setupSpinners() {
-        LogUtils.logMethodEnter(TAG, "setupSpinners");
-        
-        // 设置时间范围选项
-        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            new String[]{"全部时间", "今天", "最近7天", "最近30天", "最近90天"}
-        );
-        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        timeRangeSpinner.setAdapter(timeAdapter);
-
-        // 设置大小范围选项
-        ArrayAdapter<String> sizeAdapter = new ArrayAdapter<>(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            new String[]{"全部大小", "小于1MB", "1-10MB", "10-100MB", "大于100MB"}
-        );
-        sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sizeRangeSpinner.setAdapter(sizeAdapter);
-
-        // 设置排序方式选项
-        ArrayAdapter<String> sortAdapter = new ArrayAdapter<>(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            new String[]{"时间降序", "时间升序", "大小降序", "大小升序"}
-        );
-        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sortSpinner.setAdapter(sortAdapter);
     }
 
     private void observeViewModel() {

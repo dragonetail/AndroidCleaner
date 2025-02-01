@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.SavedStateHandle;
+import androidx.lifecycle.Transformations;
 import com.blackharry.androidcleaner.common.exception.AppException;
 import com.blackharry.androidcleaner.common.exception.ErrorCode;
 import com.blackharry.androidcleaner.recordings.data.RecordingEntity;
@@ -15,10 +16,12 @@ import com.blackharry.androidcleaner.recordings.data.RecordingRepository;
 import com.blackharry.androidcleaner.common.utils.LogUtils;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class RecordingsViewModel extends AndroidViewModel {
     private static final String TAG = "RecordingsViewModel";
@@ -45,6 +48,42 @@ public class RecordingsViewModel extends AndroidViewModel {
     private int currentPage = 0;
     private boolean isLastPage = false;
     private boolean isPreloading = false;
+
+    public enum Filter {
+        ALL,        // 全部录音
+        DELETED,    // 已删除通话
+        ORPHANED    // 孤立录音
+    }
+
+    private final MutableLiveData<Filter> currentFilter = new MutableLiveData<>(Filter.ALL);
+
+    public enum TimeFilter {
+        ALL,        // 全部时间
+        TODAY,      // 今天
+        WEEK,       // 最近7天
+        MONTH,      // 最近30天
+        QUARTER     // 最近90天
+    }
+
+    public enum DurationFilter {
+        ALL,        // 全部时长
+        MIN_1,      // 1分钟以内
+        MIN_5,      // 5分钟以内
+        MIN_30,     // 30分钟以内
+        HOUR_2,     // 2小时以内
+        LONGER      // 更长
+    }
+
+    public enum SortOrder {
+        TIME_DESC,  // 时间降序
+        TIME_ASC,   // 时间升序
+        SIZE_DESC,  // 大小降序
+        SIZE_ASC    // 大小升序
+    }
+
+    private final MutableLiveData<TimeFilter> currentTimeFilter = new MutableLiveData<>(TimeFilter.ALL);
+    private final MutableLiveData<DurationFilter> currentDurationFilter = new MutableLiveData<>(DurationFilter.ALL);
+    private final MutableLiveData<SortOrder> currentSortOrder = new MutableLiveData<>(SortOrder.TIME_DESC);
 
     public RecordingsViewModel(Application application, SavedStateHandle savedStateHandle) {
         super(application);
@@ -75,6 +114,30 @@ public class RecordingsViewModel extends AndroidViewModel {
         return waveformData;
     }
 
+    public void setFilter(Filter filter) {
+        LogUtils.logMethodEnter(TAG, "setFilter: " + filter);
+        currentFilter.setValue(filter);
+        loadRecordings(true);
+    }
+
+    public void setTimeFilter(TimeFilter filter) {
+        LogUtils.logMethodEnter(TAG, "setTimeFilter: " + filter);
+        currentTimeFilter.setValue(filter);
+        loadRecordings(true);
+    }
+
+    public void setDurationFilter(DurationFilter filter) {
+        LogUtils.logMethodEnter(TAG, "setDurationFilter: " + filter);
+        currentDurationFilter.setValue(filter);
+        loadRecordings(true);
+    }
+
+    public void setSortOrder(SortOrder order) {
+        LogUtils.logMethodEnter(TAG, "setSortOrder: " + order);
+        currentSortOrder.setValue(order);
+        loadRecordings(true);
+    }
+
     public void loadRecordings(boolean refresh) {
         LogUtils.logMethodEnter(TAG, "loadRecordings");
         if (refresh) {
@@ -87,13 +150,19 @@ public class RecordingsViewModel extends AndroidViewModel {
         repository.getRecordings(new RecordingRepository.Callback<List<RecordingEntity>>() {
             @Override
             public void onSuccess(List<RecordingEntity> result) {
-                List<RecordingEntity> pagedResult = result.subList(
+                // 应用过滤器
+                List<RecordingEntity> filteredResult = filterRecordings(result);
+                
+                // 分页处理
+                List<RecordingEntity> pagedResult = filteredResult.subList(
                     currentPage * PAGE_SIZE,
-                    Math.min((currentPage + 1) * PAGE_SIZE, result.size())
+                    Math.min((currentPage + 1) * PAGE_SIZE, filteredResult.size())
                 );
+                
                 if (pagedResult.size() < PAGE_SIZE) {
                     isLastPage = true;
                 }
+                
                 if (refresh) {
                     recordings.postValue(pagedResult);
                 } else {
@@ -118,6 +187,105 @@ public class RecordingsViewModel extends AndroidViewModel {
                 isLoading.postValue(false);
             }
         });
+    }
+
+    private List<RecordingEntity> filterRecordings(List<RecordingEntity> recordings) {
+        LogUtils.logMethodEnter(TAG, "filterRecordings");
+        if (recordings == null) return null;
+
+        // 应用时间过滤
+        List<RecordingEntity> timeFiltered = applyTimeFilter(recordings);
+        
+        // 应用时长过滤
+        List<RecordingEntity> durationFiltered = applyDurationFilter(timeFiltered);
+        
+        // 应用排序
+        return applySortOrder(durationFiltered);
+    }
+
+    private List<RecordingEntity> applyTimeFilter(List<RecordingEntity> recordings) {
+        TimeFilter filter = currentTimeFilter.getValue();
+        if (filter == null || filter == TimeFilter.ALL) return recordings;
+
+        long currentTime = System.currentTimeMillis();
+        long filterTime;
+
+        switch (filter) {
+            case TODAY:
+                filterTime = currentTime - 24 * 60 * 60 * 1000; // 24小时
+                break;
+            case WEEK:
+                filterTime = currentTime - 7 * 24 * 60 * 60 * 1000; // 7天
+                break;
+            case MONTH:
+                filterTime = currentTime - 30L * 24 * 60 * 60 * 1000; // 30天
+                break;
+            case QUARTER:
+                filterTime = currentTime - 90L * 24 * 60 * 60 * 1000; // 90天
+                break;
+            default:
+                return recordings;
+        }
+
+        return recordings.stream()
+            .filter(recording -> recording.getCreationTime() >= filterTime)
+            .collect(Collectors.toList());
+    }
+
+    private List<RecordingEntity> applyDurationFilter(List<RecordingEntity> recordings) {
+        DurationFilter filter = currentDurationFilter.getValue();
+        if (filter == null || filter == DurationFilter.ALL) return recordings;
+
+        switch (filter) {
+            case MIN_1:
+                return recordings.stream()
+                    .filter(recording -> recording.getDuration() <= 60 * 1000) // 1分钟
+                    .collect(Collectors.toList());
+            case MIN_5:
+                return recordings.stream()
+                    .filter(recording -> recording.getDuration() <= 5 * 60 * 1000) // 5分钟
+                    .collect(Collectors.toList());
+            case MIN_30:
+                return recordings.stream()
+                    .filter(recording -> recording.getDuration() <= 30 * 60 * 1000) // 30分钟
+                    .collect(Collectors.toList());
+            case HOUR_2:
+                return recordings.stream()
+                    .filter(recording -> recording.getDuration() <= 2 * 60 * 60 * 1000) // 2小时
+                    .collect(Collectors.toList());
+            case LONGER:
+                return recordings.stream()
+                    .filter(recording -> recording.getDuration() > 2 * 60 * 60 * 1000) // 2小时以上
+                    .collect(Collectors.toList());
+            default:
+                return recordings;
+        }
+    }
+
+    private List<RecordingEntity> applySortOrder(List<RecordingEntity> recordings) {
+        SortOrder order = currentSortOrder.getValue();
+        if (order == null) order = SortOrder.TIME_DESC;
+
+        switch (order) {
+            case TIME_DESC:
+                return recordings.stream()
+                    .sorted((a, b) -> Long.compare(b.getCreationTime(), a.getCreationTime()))
+                    .collect(Collectors.toList());
+            case TIME_ASC:
+                return recordings.stream()
+                    .sorted((a, b) -> Long.compare(a.getCreationTime(), b.getCreationTime()))
+                    .collect(Collectors.toList());
+            case SIZE_DESC:
+                return recordings.stream()
+                    .sorted((a, b) -> Long.compare(b.getFileSize(), a.getFileSize()))
+                    .collect(Collectors.toList());
+            case SIZE_ASC:
+                return recordings.stream()
+                    .sorted((a, b) -> Long.compare(a.getFileSize(), b.getFileSize()))
+                    .collect(Collectors.toList());
+            default:
+                return recordings;
+        }
     }
 
     public void checkPreload(int position) {
