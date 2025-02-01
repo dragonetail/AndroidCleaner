@@ -63,7 +63,7 @@ public interface ContactDao {
     List<ContactEntity> getAllContacts();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertContact(ContactEntity contact);
+    long insertContact(ContactEntity contact);
 
     @Delete
     void deleteContact(ContactEntity contact);

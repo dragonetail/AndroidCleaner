@@ -1,5 +1,7 @@
 package com.blackharry.androidcleaner.contacts.ui;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,9 +29,12 @@ import androidx.core.view.MenuProvider;
 import androidx.lifecycle.Lifecycle;
 import java.util.ArrayList;
 import java.util.List;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class ContactsFragment extends Fragment implements ContactsAdapter.OnItemClickListener {
     private static final String TAG = "ContactsFragment";
+    private static final int PERMISSION_REQUEST_CODE = 100;
     private ContactsViewModel viewModel;
     private ContactsAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -46,7 +51,37 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnItem
         super.onCreate(savedInstanceState);
         LogUtils.logMethodEnter(TAG, "onCreate");
         viewModel = new ViewModelProvider(this).get(ContactsViewModel.class);
+        
+        // 检查权限
+        checkAndRequestPermissions();
+        
         LogUtils.logMethodExit(TAG, "onCreate");
+    }
+
+    private void checkAndRequestPermissions() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(),
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    PERMISSION_REQUEST_CODE);
+        } else {
+            // 已有权限，开始同步
+            viewModel.syncContacts();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 用户授予了权限，开始同步
+                viewModel.syncContacts();
+            } else {
+                // 用户拒绝了权限
+                Toast.makeText(requireContext(), "需要联系人权限才能同步数据", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Nullable

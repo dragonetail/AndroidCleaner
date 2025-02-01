@@ -48,4 +48,8 @@
     <string name="recording_duration">%1$d分%2$d秒</string>
     <string name="recording_date">%1$s</string>
     <string name="recording_size">%1$s</string>
+    
+    <!-- 新增字符串资源 -->
+    <string name="no_calls_found">暂无通话记录</string>
+    <string name="filter_calls">筛选通话记录</string>
 </resources>

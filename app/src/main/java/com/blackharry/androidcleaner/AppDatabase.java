@@ -82,18 +82,21 @@ public abstract class AppDatabase extends RoomDatabase {
                                 @Override
                                 public void onCreate(SupportSQLiteDatabase db) {
                                     super.onCreate(db);
-                                    LogUtils.i(TAG, "数据库创建成功");
+                                    db.execSQL("PRAGMA foreign_keys = ON");
+                                    LogUtils.i(TAG, "数据库创建成功，已启用外键约束");
                                 }
 
                                 @Override
                                 public void onOpen(SupportSQLiteDatabase db) {
                                     super.onOpen(db);
-                                    LogUtils.i(TAG, "数据库打开成功");
+                                    db.execSQL("PRAGMA foreign_keys = ON");
+                                    LogUtils.i(TAG, "数据库打开成功，已启用外键约束");
                                     // 检查数据库大小
                                     ((AppDatabase)INSTANCE).checkDatabaseSize();
                                 }
                             })
                             .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                            .setJournalMode(JournalMode.TRUNCATE)
                             .fallbackToDestructiveMigration()
                             .build();
                     ((AppDatabase)INSTANCE).context = context.getApplicationContext();

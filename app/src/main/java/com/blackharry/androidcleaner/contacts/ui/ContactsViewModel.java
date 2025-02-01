@@ -38,7 +38,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void syncContacts() {
         LogUtils.logMethodEnter(TAG, "syncContacts");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
 
         repository.syncContacts(new ContactRepository.Callback<Void>() {
             @Override
@@ -59,7 +59,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void loadContacts() {
         LogUtils.logMethodEnter(TAG, "loadContacts");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
 
         repository.getContacts(new ContactRepository.Callback<List<ContactEntity>>() {
             @Override
@@ -81,7 +81,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void loadContactsWithPhoneNumber() {
         LogUtils.logMethodEnter(TAG, "loadContactsWithPhoneNumber");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
         
         repository.getContactsWithPhoneNumber(new ContactRepository.Callback<List<ContactEntity>>() {
             @Override
@@ -100,7 +100,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void searchContacts(String query) {
         LogUtils.logMethodEnter(TAG, "searchContacts");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
         
         repository.searchContacts(query, new ContactRepository.Callback<List<ContactEntity>>() {
             @Override
@@ -176,7 +176,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void loadContactsInSafeZone() {
         LogUtils.logMethodEnter(TAG, "loadContactsInSafeZone");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
         
         repository.getContactsInSafeZone(new ContactRepository.Callback<List<ContactEntity>>() {
             @Override
@@ -195,7 +195,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void loadContactsInTemporaryZone() {
         LogUtils.logMethodEnter(TAG, "loadContactsInTemporaryZone");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
         
         repository.getContactsInTemporaryZone(new ContactRepository.Callback<List<ContactEntity>>() {
             @Override
@@ -214,7 +214,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void loadBlacklistedContacts() {
         LogUtils.logMethodEnter(TAG, "loadBlacklistedContacts");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
         
         repository.getBlacklistedContacts(new ContactRepository.Callback<List<ContactEntity>>() {
             @Override
@@ -233,7 +233,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void loadDeletedContacts() {
         LogUtils.logMethodEnter(TAG, "loadDeletedContacts");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
         
         repository.getDeletedContacts(new ContactRepository.Callback<List<ContactEntity>>() {
             @Override
@@ -252,7 +252,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void updateContactZone(long contactId, boolean isSafeZone, boolean isTemporaryZone, boolean isBlacklisted) {
         LogUtils.logMethodEnter(TAG, "updateContactZone");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
         
         repository.getById(String.valueOf(contactId), new ContactRepository.Callback<ContactEntity>() {
             @Override
@@ -287,7 +287,7 @@ public class ContactsViewModel extends AndroidViewModel {
 
     public void restoreContact(long contactId) {
         LogUtils.logMethodEnter(TAG, "restoreContact");
-        isLoading.setValue(true);
+        isLoading.postValue(true);
         
         repository.getById(String.valueOf(contactId), new ContactRepository.Callback<ContactEntity>() {
             @Override
