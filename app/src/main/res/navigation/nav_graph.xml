@@ -15,6 +15,11 @@
         android:label="@string/title_recordings" />
 
     <fragment
+        android:id="@+id/nav_calls"
+        android:name="com.blackharry.androidcleaner.calls.ui.CallsFragment"
+        android:label="@string/title_calls" />
+
+    <fragment
         android:id="@+id/nav_contacts"
         android:name="com.blackharry.androidcleaner.contacts.ui.ContactsFragment"
         android:label="@string/title_contacts" />

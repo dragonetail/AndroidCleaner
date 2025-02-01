@@ -11,6 +11,11 @@
         android:title="@string/title_recordings" />
 
     <item
+        android:id="@+id/nav_calls"
+        android:icon="@drawable/ic_calls"
+        android:title="@string/title_calls" />
+
+    <item
         android:id="@+id/nav_contacts"
         android:icon="@drawable/ic_contacts"
         android:title="@string/title_contacts" />
