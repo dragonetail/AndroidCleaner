@@ -1,6 +1,8 @@
 {
     "project": {
         "name": "AndroidCleaner",
+        "description": "安卓垃圾文件删除app",
+        "type": "android",
         "package": "com.blackharry.androidcleaner",
         "minSdkVersion": 24,
         "targetSdkVersion": 33
@@ -110,6 +112,40 @@
                 "newFeatures": "userInitiated",
                 "requireApproval": true,
                 "preserveDesign": true
+            },
+            "resourceManagement": {
+                "resourceAddition": {
+                    "checkReferences": true,
+                    "autoCreateMissing": true,
+                    "validateCompilation": true
+                },
+                "resourceModification": {
+                    "analyzeUsage": true,
+                    "cleanupUnused": true,
+                    "validateCompilation": true
+                },
+                "resourceDeletion": {
+                    "analyzeReferences": true,
+                    "cleanupOrphaned": true,
+                    "validateCompilation": true
+                }
+            }
+        },
+        "logging": {
+            "language": "中文",
+            "required": {
+                "timestamp": true,
+                "thread": true,
+                "level": true,
+                "context": true
+            }
+        },
+        "robustness": {
+            "required": {
+                "errorHandling": true,
+                "exceptionHandling": true,
+                "crashHandling": true,
+                "performanceMonitoring": true
             }
         }
     }
