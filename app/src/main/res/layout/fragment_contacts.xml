@@ -98,23 +98,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingVertical="8dp" />
-
-            <TextView
-                android:id="@+id/text_empty"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="暂无联系人"
-                android:textAppearance="?attr/textAppearanceBody1"
-                android:visibility="gone" />
+                android:paddingBottom="4dp"/>
 
             <ProgressBar
                 android:id="@+id/progress_bar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:visibility="gone" />
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/text_empty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/no_data"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:visibility="gone"/>
 
         </FrameLayout>
 
@@ -126,8 +126,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:contentDescription="筛选联系人"
-        app:srcCompat="@android:drawable/ic_menu_sort_by_size" />
+        android:contentDescription="@string/filter_calls"
+        app:srcCompat="@drawable/ic_filter"/>
 
     <!-- 批量操作底部栏 -->
     <com.google.android.material.bottomappbar.BottomAppBar

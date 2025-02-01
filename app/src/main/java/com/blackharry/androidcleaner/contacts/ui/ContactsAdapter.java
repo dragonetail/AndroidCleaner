@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.ImageView;
+import android.widget.CheckBox;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
@@ -74,25 +75,22 @@ public class ContactsAdapter extends ListAdapter<ContactEntity, ContactsAdapter.
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView photoView;
         private final TextView nameText;
         private final TextView phoneText;
-        private final ImageView starIcon;
+        private final TextView tagText;
+        private final CheckBox checkBox;
         private final View itemView;
 
         ViewHolder(View view) {
             super(view);
             itemView = view;
-            photoView = view.findViewById(R.id.image_photo);
-            nameText = view.findViewById(R.id.text_name);
-            phoneText = view.findViewById(R.id.text_phone);
-            starIcon = view.findViewById(R.id.icon_star);
+            nameText = view.findViewById(R.id.contact_name);
+            phoneText = view.findViewById(R.id.contact_phone);
+            tagText = view.findViewById(R.id.contact_tag);
+            checkBox = view.findViewById(R.id.checkbox);
         }
 
         void bind(ContactEntity contact, OnItemClickListener listener, boolean isSelected) {
-            // 设置头像
-            photoView.setImageResource(R.drawable.ic_person);
-
             // 设置名称
             nameText.setText(contact.getName());
 
@@ -108,14 +106,23 @@ public class ContactsAdapter extends ListAdapter<ContactEntity, ContactsAdapter.
                 phoneText.setVisibility(View.GONE);
             }
 
-            // 设置星标
-            starIcon.setVisibility(contact.isSafeZone() ? View.VISIBLE : View.GONE);
+            // 设置标签
+            if (contact.isSafeZone()) {
+                tagText.setText("安全区");
+                tagText.setVisibility(View.VISIBLE);
+            } else if (contact.isTemporaryZone()) {
+                tagText.setText("临时区");
+                tagText.setVisibility(View.VISIBLE);
+            } else if (contact.isBlacklisted()) {
+                tagText.setText("黑名单");
+                tagText.setVisibility(View.VISIBLE);
+            } else {
+                tagText.setVisibility(View.GONE);
+            }
 
             // 设置选中状态
-            itemView.setSelected(isSelected);
-            itemView.setBackgroundResource(
-                isSelected ? R.drawable.bg_item_selected : R.drawable.bg_item_normal
-            );
+            checkBox.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+            checkBox.setChecked(isSelected);
 
             // 设置点击事件
             itemView.setOnClickListener(v -> listener.onItemClick(contact));

@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.activity.result.ActivityResultLauncher;
 
 public class ContactsFragment extends Fragment implements ContactsAdapter.OnItemClickListener {
     private static final String TAG = "ContactsFragment";
@@ -45,6 +47,7 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnItem
     private boolean isSelectionMode = false;
     private MenuItem selectAllMenuItem;
     private MenuItem clearSelectionMenuItem;
+    private ActivityResultLauncher<String> permissionLauncher;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,26 +64,21 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnItem
     private void checkAndRequestPermissions() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(),
-                    new String[]{Manifest.permission.READ_CONTACTS},
-                    PERMISSION_REQUEST_CODE);
+            // 使用新的权限请求API
+            registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        // 用户授予了权限，开始同步
+                        viewModel.syncContacts();
+                    } else {
+                        // 用户拒绝了权限
+                        Toast.makeText(requireContext(), "需要联系人权限才能同步数据", Toast.LENGTH_LONG).show();
+                    }
+                }).launch(Manifest.permission.READ_CONTACTS);
         } else {
             // 已有权限，开始同步
             viewModel.syncContacts();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-            @NonNull int[] grantResults) {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // 用户授予了权限，开始同步
-                viewModel.syncContacts();
-            } else {
-                // 用户拒绝了权限
-                Toast.makeText(requireContext(), "需要联系人权限才能同步数据", Toast.LENGTH_LONG).show();
-            }
         }
     }
 
