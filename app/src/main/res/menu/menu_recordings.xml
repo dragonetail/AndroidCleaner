@@ -10,8 +10,7 @@
             <item
                 android:id="@+id/menu_time"
                 android:title="时间"
-                app:showAsAction="never"
-                style="@style/MenuHeader">
+                style="@style/Widget.App.PopupMenu.Header">
                 <menu>
                     <group android:checkableBehavior="single">
                         <item
@@ -35,8 +34,7 @@
             <item
                 android:id="@+id/menu_duration"
                 android:title="时长"
-                app:showAsAction="never"
-                style="@style/MenuHeader">
+                style="@style/Widget.App.PopupMenu.Header">
                 <menu>
                     <group android:checkableBehavior="single">
                         <item
@@ -63,8 +61,7 @@
             <item
                 android:id="@+id/menu_sort"
                 android:title="排序"
-                app:showAsAction="never"
-                style="@style/MenuHeader">
+                style="@style/Widget.App.PopupMenu.Header">
                 <menu>
                     <group android:checkableBehavior="single">
                         <item

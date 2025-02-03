@@ -66,16 +66,35 @@
         <item name="android:itemBackground">@android:color/white</item>
     </style>
 
+    <!-- 应用主题 -->
+    <style name="Theme.App" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorPrimary">@android:color/white</item>
+        <item name="colorPrimaryDark">@android:color/white</item>
+        <item name="colorAccent">@android:color/black</item>
+        
+        <!-- 设置 PopupMenu 样式 -->
+        <item name="popupMenuStyle">@style/Widget.App.PopupMenu</item>
+        <item name="android:popupMenuStyle">@style/Widget.App.PopupMenu</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.App.PopupMenu</item>
+    </style>
+
+    <!-- PopupMenu 样式 -->
+    <style name="Widget.App.PopupMenu" parent="Widget.MaterialComponents.PopupMenu">
+        <item name="android:itemBackground">@android:color/white</item>
+        <item name="android:popupBackground">@android:color/white</item>
+    </style>
+
     <!-- 菜单标题样式 -->
-    <style name="MenuHeader">
+    <style name="Widget.App.PopupMenu.Header">
         <item name="android:background">@color/menu_header_bg</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/text_primary</item>
-        <item name="android:paddingTop">12dp</item>
-        <item name="android:paddingBottom">12dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:gravity">center_vertical</item>
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
-        <item name="android:minHeight">48dp</item>
     </style>
 </resources>

@@ -57,5 +57,5 @@
     <color name="waveform_progress">#2196F3</color>
 
     <!-- 菜单标题背景色 -->
-    <color name="menu_header_bg">#E0E0E0</color>
+    <color name="menu_header_bg">#BDBDBD</color>
 </resources>
