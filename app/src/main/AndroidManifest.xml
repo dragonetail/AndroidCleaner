@@ -33,15 +33,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
+        <!-- 移除DatabaseDebugActivity的引用 -->
+        <!-- <activity
             android:name=".recordings.data.DatabaseDebugActivity"
             android:label="@string/debug_title"
             android:theme="@style/Theme.MaterialComponents.DayNight.DarkActionBar"
-            android:exported="false">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
+            android:exported="false"> -->
         <activity
             android:name=".debug.DatabaseDebugActivity"
             android:exported="false"

@@ -28,13 +28,11 @@ import com.blackharry.androidcleaner.AppDatabase;
 
 public class RecordingsViewModel extends AndroidViewModel {
     private static final String TAG = "RecordingsViewModel";
-    private static final int PAGE_SIZE = 20;
     private static final int PRELOAD_DISTANCE = 10;
     private static final int CAPTURE_SIZE = 1024;
     
     private static RecordingsViewModel currentPlayingViewModel;
     
-    private final SavedStateHandle savedStateHandle;
     private final RecordingRepository repository;
     private final ScheduledExecutorService scheduledExecutor;
     private final MutableLiveData<List<RecordingEntity>> recordings = new MutableLiveData<>();
@@ -48,18 +46,7 @@ public class RecordingsViewModel extends AndroidViewModel {
     private ScheduledFuture<?> progressUpdateTask;
     private String currentPlayingFilePath;
     private float currentSpeed = 1.0f;
-    private int currentPage = 0;
-    private boolean isLastPage = false;
     private boolean isPreloading = false;
-
-    public enum Filter {
-        ALL,        // 全部录音
-        DELETED,    // 已删除通话
-        ORPHANED    // 孤立录音
-    }
-
-    private final MutableLiveData<Filter> currentFilter = new MutableLiveData<>(Filter.ALL);
-
     public enum TimeFilter {
         ALL,        // 全部时间
         YEAR_AGO,   // 一年以前
@@ -90,17 +77,6 @@ public class RecordingsViewModel extends AndroidViewModel {
     private final MutableLiveData<SortOrder> currentSortOrder = new MutableLiveData<>(SortOrder.TIME_DESC);
 
     private final ExecutorService executorService;
-
-    public enum SortOption {
-        DATE_ASC,
-        DATE_DESC,
-        DURATION_ASC,
-        DURATION_DESC,
-        SIZE_ASC,
-        SIZE_DESC
-    }
-
-    private final MutableLiveData<SortOption> currentSortOption = new MutableLiveData<>(SortOption.DATE_DESC);
     private final MutableLiveData<Long> minDuration = new MutableLiveData<>(0L);
     private final MutableLiveData<Long> maxDuration = new MutableLiveData<>(Long.MAX_VALUE);
     private final MutableLiveData<Long> startDate = new MutableLiveData<>(0L);
@@ -111,31 +87,11 @@ public class RecordingsViewModel extends AndroidViewModel {
     public RecordingsViewModel(Application application, SavedStateHandle savedStateHandle) {
         super(application);
         LogUtils.logMethodEnter(TAG, "RecordingsViewModel");
-        this.savedStateHandle = savedStateHandle;
         repository = RecordingRepository.getInstance(application);
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         executorService = Executors.newSingleThreadExecutor();
+        filteredRecordings = Transformations.map(recordings, input -> input);
         loadRecordings(true);
-
-        // 组合所有过滤条件
-        filteredRecordings = Transformations.switchMap(currentSortOption, sortOption ->
-            Transformations.switchMap(minDuration, min ->
-                Transformations.switchMap(maxDuration, max ->
-                    Transformations.switchMap(startDate, start ->
-                        Transformations.switchMap(endDate, end -> {
-                            AppDatabase db = AppDatabase.getInstance(getApplication());
-                            return db.recordingDao().getFilteredRecordings(
-                                start,
-                                end,
-                                min,
-                                max,
-                                sortOption.toString()
-                            );
-                        })
-                    )
-                )
-            )
-        );
     }
 
     public LiveData<List<RecordingEntity>> getRecordings() {
@@ -156,12 +112,6 @@ public class RecordingsViewModel extends AndroidViewModel {
 
     public LiveData<float[]> getWaveformData() {
         return waveformData;
-    }
-
-    public void setFilter(Filter filter) {
-        LogUtils.logMethodEnter(TAG, "setFilter: " + filter);
-        currentFilter.setValue(filter);
-        loadRecordings(true);
     }
 
     public TimeFilter getCurrentTimeFilter() {
@@ -495,11 +445,6 @@ public class RecordingsViewModel extends AndroidViewModel {
         });
     }
 
-    public void setSortOption(SortOption option) {
-        LogUtils.i(TAG, "设置排序选项: " + option);
-        currentSortOption.setValue(option);
-    }
-
     public void setDurationFilter(long min, long max) {
         LogUtils.i(TAG, String.format("设置时长过滤: %d - %d", min, max));
         minDuration.setValue(min);
@@ -510,15 +455,6 @@ public class RecordingsViewModel extends AndroidViewModel {
         LogUtils.i(TAG, String.format("设置日期过滤: %d - %d", start, end));
         startDate.setValue(start);
         endDate.setValue(end);
-    }
-
-    public void clearFilters() {
-        LogUtils.i(TAG, "清除所有过滤条件");
-        minDuration.setValue(0L);
-        maxDuration.setValue(Long.MAX_VALUE);
-        startDate.setValue(0L);
-        endDate.setValue(Long.MAX_VALUE);
-        currentSortOption.setValue(SortOption.DATE_DESC);
     }
 
     public void checkAndLoadInitialData() {

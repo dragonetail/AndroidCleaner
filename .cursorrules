@@ -166,16 +166,20 @@
         "autoCompileAndTest": {
             "enabled": true,
             "triggers": [
-                "configChange"
+                "configChange",
+                "codeChange"
             ]
         },
         "composerPrinciples": {
             "conciseness": true,
             "contextSelection": "README.md",
             "commands": {
-                "编译": "./gradlew clean installDebug",
-                "运行": "./run-app.sh"
+                "compile": "./gradlew installDebug",
+                "run": "./run-app.sh"
             }
         }
+    },
+    "androidCode": {
+        "useLatestImplementation": true
     }
 } 

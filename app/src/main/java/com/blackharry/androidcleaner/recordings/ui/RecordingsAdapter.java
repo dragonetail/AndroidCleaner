@@ -107,12 +107,13 @@ public class RecordingsAdapter extends ListAdapter<RecordingEntity, RecordingsAd
     private void updateViewState(@NonNull ViewHolder holder, RecordingEntity recording) {
         boolean isSelected = selectedItems.contains(recording.getFilePath());
         
-        // 切换播放按钮和选择框的显示状态
+        // 切换播放按钮容器和选择框的显示状态
+        View playButtonContainer = holder.itemView.findViewById(R.id.play_button_container);
         if (isSelectionMode) {
-            holder.playButton.setVisibility(View.GONE);
+            playButtonContainer.setVisibility(View.GONE);
             holder.checkbox.setVisibility(View.VISIBLE);
         } else {
-            holder.playButton.setVisibility(View.VISIBLE);
+            playButtonContainer.setVisibility(View.VISIBLE);
             holder.checkbox.setVisibility(View.GONE);
         }
         

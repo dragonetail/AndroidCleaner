@@ -7,4 +7,4 @@
 chmod +x gradlew
 
 # 清理并安装debug版本
-./gradlew clean installDebug
+./gradlew clean build installDebug
