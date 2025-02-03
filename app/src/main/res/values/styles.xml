@@ -61,15 +61,21 @@
         <item name="titleCentered">true</item>
     </style>
 
+    <!-- 菜单样式 -->
+    <style name="PopupMenu" parent="Widget.MaterialComponents.PopupMenu">
+        <item name="android:itemBackground">@android:color/white</item>
+    </style>
+
     <!-- 菜单标题样式 -->
-    <style name="MenuHeaderStyle">
-        <item name="android:textSize">16sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/text_primary</item>
+    <style name="MenuHeader">
         <item name="android:background">@color/menu_header_bg</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text_primary</item>
         <item name="android:paddingTop">12dp</item>
         <item name="android:paddingBottom">12dp</item>
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
+        <item name="android:minHeight">48dp</item>
     </style>
 </resources>
