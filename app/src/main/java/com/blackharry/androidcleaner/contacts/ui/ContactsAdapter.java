@@ -60,6 +60,13 @@ public class ContactsAdapter extends ListAdapter<ContactEntity, ContactsAdapter.
         notifyDataSetChanged();
     }
 
+    public void selectAll() {
+        for (int i = 0; i < getItemCount(); i++) {
+            selectedItems.add(String.valueOf(getItem(i).getId()));
+        }
+        notifyDataSetChanged();
+    }
+
     public void clearSelection() {
         selectedItems.clear();
         notifyDataSetChanged();

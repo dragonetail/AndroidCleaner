@@ -10,6 +10,16 @@
         android:layout_height="wrap_content"
         android:background="@color/white">
 
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/white"
+            android:elevation="4dp"
+            app:theme="@style/ThemeOverlay.App.Toolbar.Center"
+            app:title="@string/title_bar_calls"
+            app:menu="@menu/menu_calls"/>
+
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

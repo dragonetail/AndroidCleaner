@@ -48,6 +48,7 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnItem
     private MenuItem selectAllMenuItem;
     private MenuItem clearSelectionMenuItem;
     private ActivityResultLauncher<String> permissionLauncher;
+    private androidx.appcompat.widget.Toolbar toolbar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -103,6 +104,12 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnItem
     }
 
     private void initializeViews(View view) {
+        LogUtils.logMethodEnter(TAG, "initializeViews");
+        
+        // 初始化Toolbar
+        toolbar = view.findViewById(R.id.toolbar);
+        setupToolbar();
+
         // 初始化SwipeRefreshLayout
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
         swipeRefreshLayout.setOnRefreshListener(() -> {
@@ -126,6 +133,27 @@ public class ContactsFragment extends Fragment implements ContactsAdapter.OnItem
             LogUtils.i(TAG, "用户点击FAB");
             showFilterDialog();
         });
+    }
+
+    private void setupToolbar() {
+        LogUtils.logMethodEnter(TAG, "setupToolbar");
+        if (toolbar != null) {
+            toolbar.setTitle(R.string.title_bar_contacts);
+            toolbar.inflateMenu(R.menu.menu_contacts);
+            toolbar.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.action_select_all) {
+                    adapter.selectAll();
+                    return true;
+                } else if (id == R.id.action_clear_selection) {
+                    adapter.clearSelection();
+                    isSelectionMode = false;
+                    updateMenuItems();
+                    return true;
+                }
+                return false;
+            });
+        }
     }
 
     private void setupObservers() {

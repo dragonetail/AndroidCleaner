@@ -84,4 +84,11 @@
     <string name="sort_time_asc">时间升序</string>
     <string name="sort_size_desc">大小降序</string>
     <string name="sort_size_asc">大小升序</string>
+
+    <!-- 选择模式的操作菜单 -->
+    <string name="delete">删除</string>
+    <string name="select_all">全选</string>
+    <string name="share">分享</string>
+    <string name="convert_to_text">转文字</string>
+    <string name="rename">重命名</string>
 </resources>

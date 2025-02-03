@@ -23,6 +23,7 @@ public class OverviewFragment extends Fragment {
     private TextView callCount;
     private TextView contactCount;
     private TextView totalDuration;
+    private androidx.appcompat.widget.Toolbar toolbar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class OverviewFragment extends Fragment {
         LogUtils.logMethodEnter(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_overview, container, false);
         initViews(view);
+        setupToolbar();
         observeViewModel();
         return view;
     }
@@ -49,9 +51,17 @@ public class OverviewFragment extends Fragment {
         refreshData();
     }
 
+    private void setupToolbar() {
+        LogUtils.logMethodEnter(TAG, "setupToolbar");
+        if (toolbar != null) {
+            toolbar.setTitle(R.string.title_bar_overview);
+        }
+    }
+
     private void initViews(View view) {
         LogUtils.logMethodEnter(TAG, "initViews");
         
+        toolbar = view.findViewById(R.id.toolbar);
         storageProgress = view.findViewById(R.id.storage_progress);
         storageText = view.findViewById(R.id.storage_text);
         storageDesc = view.findViewById(R.id.storage_desc);

@@ -3,14 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     
     <item
-        android:id="@+id/action_set_ringtone"
-        android:title="设为来电铃声"/>
-
+        android:id="@+id/action_share"
+        android:title="@string/share"
+        android:icon="@drawable/ic_share"
+        app:showAsAction="never"/>
+    
     <item
-        android:id="@+id/action_details"
-        android:title="详情"/>
-
+        android:id="@+id/action_convert_text"
+        android:title="@string/convert_to_text"
+        android:icon="@drawable/ic_text"
+        app:showAsAction="never"/>
+    
     <item
         android:id="@+id/action_rename"
-        android:title="重命名"/>
+        android:title="@string/rename"
+        android:icon="@drawable/ic_edit"
+        app:showAsAction="never"/>
+        
 </menu> 

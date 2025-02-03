@@ -20,8 +20,8 @@ import java.util.Set;
 public class RecordingsAdapter extends ListAdapter<RecordingEntity, RecordingsAdapter.ViewHolder> {
     private static final String TAG = "RecordingsAdapter";
     private final RecordingClickListener listener;
-    private final Set<String> selectedItems = new HashSet<>();
     private boolean isSelectionMode = false;
+    private final Set<String> selectedItems = new HashSet<>();
 
     public RecordingsAdapter(RecordingClickListener listener) {
         super(new DiffUtil.ItemCallback<RecordingEntity>() {
@@ -121,34 +121,6 @@ public class RecordingsAdapter extends ListAdapter<RecordingEntity, RecordingsAd
         holder.itemView.setActivated(isSelected);
     }
 
-    public void toggleSelection(String filePath) {
-        LogUtils.logMethodEnter(TAG, "toggleSelection");
-        if (selectedItems.contains(filePath)) {
-            selectedItems.remove(filePath);
-            if (selectedItems.isEmpty()) {
-                isSelectionMode = false;
-                notifyDataSetChanged(); // 刷新所有项以恢复显示状态
-            }
-        } else {
-            selectedItems.add(filePath);
-        }
-        listener.onSelectionChange(selectedItems);
-        notifyDataSetChanged();
-        LogUtils.logMethodExit(TAG, "toggleSelection");
-    }
-
-    public void clearSelection() {
-        LogUtils.logMethodEnter(TAG, "clearSelection");
-        selectedItems.clear();
-        isSelectionMode = false;
-        notifyDataSetChanged();
-        LogUtils.logMethodExit(TAG, "clearSelection");
-    }
-
-    public Set<String> getSelectedItems() {
-        return new HashSet<>(selectedItems);
-    }
-
     public void setSelectionMode(boolean selectionMode) {
         LogUtils.logMethodEnter(TAG, "setSelectionMode");
         if (this.isSelectionMode != selectionMode) {
@@ -159,6 +131,58 @@ public class RecordingsAdapter extends ListAdapter<RecordingEntity, RecordingsAd
             notifyDataSetChanged();
         }
         LogUtils.logMethodExit(TAG, "setSelectionMode");
+    }
+
+    public boolean isSelectionMode() {
+        return isSelectionMode;
+    }
+
+    public void toggleSelection(String filePath) {
+        LogUtils.logMethodEnter(TAG, "toggleSelection");
+        if (selectedItems.contains(filePath)) {
+            selectedItems.remove(filePath);
+        } else {
+            selectedItems.add(filePath);
+        }
+        notifyDataSetChanged();
+        listener.onSelectionChange(selectedItems);
+        LogUtils.logMethodExit(TAG, "toggleSelection");
+    }
+
+    public boolean isSelected(String filePath) {
+        return selectedItems.contains(filePath);
+    }
+
+    public void addSelection(String filePath) {
+        LogUtils.logMethodEnter(TAG, "addSelection");
+        if (selectedItems.add(filePath)) {
+            notifyDataSetChanged();
+            listener.onSelectionChange(selectedItems);
+        }
+        LogUtils.logMethodExit(TAG, "addSelection");
+    }
+
+    public void removeSelection(String filePath) {
+        LogUtils.logMethodEnter(TAG, "removeSelection");
+        if (selectedItems.remove(filePath)) {
+            notifyDataSetChanged();
+            listener.onSelectionChange(selectedItems);
+        }
+        LogUtils.logMethodExit(TAG, "removeSelection");
+    }
+
+    public void clearSelection() {
+        LogUtils.logMethodEnter(TAG, "clearSelection");
+        if (!selectedItems.isEmpty()) {
+            selectedItems.clear();
+            notifyDataSetChanged();
+            listener.onSelectionChange(selectedItems);
+        }
+        LogUtils.logMethodExit(TAG, "clearSelection");
+    }
+
+    public Set<String> getSelectedItems() {
+        return new HashSet<>(selectedItems);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -184,5 +208,7 @@ public class RecordingsAdapter extends ListAdapter<RecordingEntity, RecordingsAd
         void onRecordingClick(RecordingEntity recording);
         void onPlayPauseClick(RecordingEntity recording);
         void onSelectionChange(Set<String> selectedItems);
+        void onSeekTo(RecordingEntity recording, int progress);
+        void onSpeedChange(RecordingEntity recording, float speed);
     }
 } 

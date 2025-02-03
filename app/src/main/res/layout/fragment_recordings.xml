@@ -19,6 +19,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@android:color/white"
             android:elevation="4dp"
+            app:theme="@style/ThemeOverlay.App.Toolbar.Center"
             app:title="@string/title_bar_recordings"
             app:menu="@menu/menu_recordings_filter"/>
 
@@ -36,32 +37,65 @@
             android:id="@+id/selection_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp">
+            android:background="@android:color/white"
+            android:elevation="4dp">
 
+            <!-- 左侧关闭按钮 -->
+            <ImageButton
+                android:id="@+id/close_selection_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="start|center_vertical"
+                android:padding="12dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/close"/>
+
+            <!-- 中间选择数量 -->
+            <TextView
+                android:id="@+id/selection_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:layout_marginStart="16dp"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:textColor="@color/text_primary"
+                tools:text="已选择 2 项"/>
+
+            <!-- 右侧功能菜单区 -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_gravity="end|center_vertical"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
                 <ImageButton
-                    android:id="@+id/close_selection_button"
+                    android:id="@+id/action_delete"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/ic_close"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_delete"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/close"/>
+                    android:contentDescription="@string/delete"/>
 
-                <TextView
-                    android:id="@+id/selection_count"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="16dp"
-                    android:textAppearance="?attr/textAppearanceSubtitle1"
-                    android:textColor="@color/text_primary"
-                    tools:text="已选择 2 项"/>
+                <ImageButton
+                    android:id="@+id/action_select_all"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_select_all"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/select_all"/>
+
+                <ImageButton
+                    android:id="@+id/action_more"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_more_vert"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/more_options"/>
 
             </LinearLayout>
 
@@ -70,43 +104,27 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- 主要内容区域 -->
-    <androidx.core.widget.NestedScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <FrameLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recordings_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="80dp"/>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recordings_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingTop="8dp"
-                android:paddingBottom="80dp"/>
+        <!-- 空状态 -->
+        <include
+            android:id="@+id/empty_state"
+            layout="@layout/empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
 
-            <!-- 空状态 -->
-            <include
-                android:id="@+id/empty_state"
-                layout="@layout/empty_state"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone"/>
-
-        </FrameLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
-    <!-- 选择模式的底部工具栏 -->
-    <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/selection_bottom_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:menu="@menu/menu_recordings_selection"
-        app:fabAlignmentMode="end"
-        android:visibility="gone"/>
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout> 
