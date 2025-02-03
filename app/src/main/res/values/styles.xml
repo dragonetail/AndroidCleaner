@@ -24,12 +24,11 @@
         <item name="contentInsetLeft">0dp</item>
         <item name="contentInsetEnd">0dp</item>
         <item name="contentInsetRight">0dp</item>
-    </style>
-
-    <style name="TextAppearance.App.Toolbar.Title" parent="TextAppearance.MaterialComponents.Headline6">
-        <item name="android:textSize">18sp</item>
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">?attr/actionBarSize</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="titleMarginTop">0dp</item>
+        <item name="titleMarginBottom">0dp</item>
     </style>
 
     <!-- 底部导航栏样式覆盖 -->
@@ -95,5 +94,14 @@
     <style name="Widget.App.PopupMenu.Item" parent="Widget.Material3.PopupMenu">
         <item name="android:checkMark">@drawable/ic_radio_button</item>
         <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- 自定义CheckBox样式 -->
+    <style name="CustomCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:button">@drawable/checkbox_black</item>
+        <item name="android:buttonTint">#000000</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:padding">0dp</item>
     </style>
 </resources>
