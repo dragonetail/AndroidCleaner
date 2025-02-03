@@ -23,6 +23,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import com.blackharry.androidcleaner.AppDatabase;
 
 public class RecordingsViewModel extends AndroidViewModel {
     private static final String TAG = "RecordingsViewModel";
@@ -60,6 +62,7 @@ public class RecordingsViewModel extends AndroidViewModel {
 
     public enum TimeFilter {
         ALL,        // 全部时间
+        YEAR_AGO,   // 一年以前
         TODAY,      // 今天
         WEEK,       // 最近7天
         MONTH,      // 最近30天
@@ -86,17 +89,57 @@ public class RecordingsViewModel extends AndroidViewModel {
     private final MutableLiveData<DurationFilter> currentDurationFilter = new MutableLiveData<>(DurationFilter.ALL);
     private final MutableLiveData<SortOrder> currentSortOrder = new MutableLiveData<>(SortOrder.TIME_DESC);
 
+    private final ExecutorService executorService;
+
+    public enum SortOption {
+        DATE_ASC,
+        DATE_DESC,
+        DURATION_ASC,
+        DURATION_DESC,
+        SIZE_ASC,
+        SIZE_DESC
+    }
+
+    private final MutableLiveData<SortOption> currentSortOption = new MutableLiveData<>(SortOption.DATE_DESC);
+    private final MutableLiveData<Long> minDuration = new MutableLiveData<>(0L);
+    private final MutableLiveData<Long> maxDuration = new MutableLiveData<>(Long.MAX_VALUE);
+    private final MutableLiveData<Long> startDate = new MutableLiveData<>(0L);
+    private final MutableLiveData<Long> endDate = new MutableLiveData<>(Long.MAX_VALUE);
+
+    private LiveData<List<RecordingEntity>> filteredRecordings;
+
     public RecordingsViewModel(Application application, SavedStateHandle savedStateHandle) {
         super(application);
         LogUtils.logMethodEnter(TAG, "RecordingsViewModel");
         this.savedStateHandle = savedStateHandle;
         repository = RecordingRepository.getInstance(application);
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+        executorService = Executors.newSingleThreadExecutor();
         loadRecordings(true);
+
+        // 组合所有过滤条件
+        filteredRecordings = Transformations.switchMap(currentSortOption, sortOption ->
+            Transformations.switchMap(minDuration, min ->
+                Transformations.switchMap(maxDuration, max ->
+                    Transformations.switchMap(startDate, start ->
+                        Transformations.switchMap(endDate, end -> {
+                            AppDatabase db = AppDatabase.getInstance(getApplication());
+                            return db.recordingDao().getFilteredRecordings(
+                                start,
+                                end,
+                                min,
+                                max,
+                                sortOption.toString()
+                            );
+                        })
+                    )
+                )
+            )
+        );
     }
 
     public LiveData<List<RecordingEntity>> getRecordings() {
-        return recordings;
+        return filteredRecordings;
     }
 
     public LiveData<Boolean> getIsLoading() {
@@ -155,99 +198,50 @@ public class RecordingsViewModel extends AndroidViewModel {
     }
 
     public void loadRecordings(boolean forceRefresh) {
+        LogUtils.logMethodEnter(TAG, "loadRecordings");
+        if (isLoading.getValue()) {
+            return;
+        }
         isLoading.setValue(true);
-        repository.getRecordings(new RecordingRepository.Callback<List<RecordingEntity>>() {
-            @Override
-            public void onSuccess(List<RecordingEntity> result) {
-                // 应用过滤和排序
-                List<RecordingEntity> filteredList = applyFilters(result);
-                recordings.postValue(filteredList);
-                isLoading.postValue(false);
-            }
+        error.setValue(null);
 
-            @Override
-            public void onError(Exception e) {
-                error.postValue(e.getMessage());
+        executorService.execute(() -> {
+            try {
+                // 计算时间过滤器的时间戳
+                long currentTime = System.currentTimeMillis();
+                long todayStart = currentTime - (currentTime % (24 * 60 * 60 * 1000));
+                long weekStart = currentTime - (7 * 24 * 60 * 60 * 1000);
+                long monthStart = currentTime - (30L * 24 * 60 * 60 * 1000);
+                long quarterStart = currentTime - (90L * 24 * 60 * 60 * 1000);
+                long yearStart = currentTime - (365L * 24 * 60 * 60 * 1000);
+
+                // 获取当前过滤器和排序设置
+                TimeFilter timeFilter = currentTimeFilter.getValue();
+                DurationFilter durationFilter = currentDurationFilter.getValue();
+                SortOrder sortOrder = currentSortOrder.getValue();
+
+                // 使用新的查询方法获取过滤和排序后的录音列表
+                List<RecordingEntity> filteredRecordings = repository.getRecordingDao()
+                    .getFilteredAndSorted(
+                        timeFilter.name(),
+                        todayStart,
+                        weekStart,
+                        monthStart,
+                        quarterStart,
+                        yearStart,
+                        durationFilter.name(),
+                        sortOrder.name()
+                    );
+
+                // 更新UI
+                recordings.postValue(filteredRecordings);
+                isLoading.postValue(false);
+            } catch (Exception e) {
+                LogUtils.logError(TAG, "加载录音文件失败", e);
+                error.postValue("加载录音文件失败：" + e.getMessage());
                 isLoading.postValue(false);
             }
         });
-    }
-
-    private List<RecordingEntity> applyFilters(List<RecordingEntity> recordings) {
-        List<RecordingEntity> result = new ArrayList<>(recordings);
-        
-        // 应用时间过滤
-        TimeFilter timeFilter = getCurrentTimeFilter();
-        if (timeFilter != TimeFilter.ALL) {
-            long currentTime = System.currentTimeMillis();
-            long filterTime;
-            switch (timeFilter) {
-                case TODAY:
-                    filterTime = currentTime - 24 * 60 * 60 * 1000;
-                    break;
-                case WEEK:
-                    filterTime = currentTime - 7 * 24 * 60 * 60 * 1000;
-                    break;
-                case MONTH:
-                    filterTime = currentTime - 30L * 24 * 60 * 60 * 1000;
-                    break;
-                case QUARTER:
-                    filterTime = currentTime - 90L * 24 * 60 * 60 * 1000;
-                    break;
-                default:
-                    filterTime = 0;
-            }
-            result.removeIf(recording -> recording.getCreationTime() < filterTime);
-        }
-
-        // 应用时长过滤
-        DurationFilter durationFilter = getCurrentDurationFilter();
-        if (durationFilter != DurationFilter.ALL) {
-            long maxDuration;
-            switch (durationFilter) {
-                case MIN_1:
-                    maxDuration = 60 * 1000;
-                    break;
-                case MIN_5:
-                    maxDuration = 5 * 60 * 1000;
-                    break;
-                case MIN_30:
-                    maxDuration = 30 * 60 * 1000;
-                    break;
-                case HOUR_2:
-                    maxDuration = 2 * 60 * 60 * 1000;
-                    break;
-                case LONGER:
-                    maxDuration = Long.MAX_VALUE;
-                    break;
-                default:
-                    maxDuration = 0;
-            }
-            if (durationFilter == DurationFilter.LONGER) {
-                result.removeIf(recording -> recording.getDuration() <= 2 * 60 * 60 * 1000);
-            } else {
-                result.removeIf(recording -> recording.getDuration() > maxDuration);
-            }
-        }
-
-        // 应用排序
-        SortOrder sortOrder = getCurrentSortOrder();
-        switch (sortOrder) {
-            case TIME_DESC:
-                result.sort((a, b) -> Long.compare(b.getCreationTime(), a.getCreationTime()));
-                break;
-            case TIME_ASC:
-                result.sort((a, b) -> Long.compare(a.getCreationTime(), b.getCreationTime()));
-                break;
-            case SIZE_DESC:
-                result.sort((a, b) -> Long.compare(b.getFileSize(), a.getFileSize()));
-                break;
-            case SIZE_ASC:
-                result.sort((a, b) -> Long.compare(a.getFileSize(), b.getFileSize()));
-                break;
-        }
-
-        return result;
     }
 
     public void checkPreload(int position) {
@@ -456,6 +450,7 @@ public class RecordingsViewModel extends AndroidViewModel {
         stopPlayback();
         releaseMediaPlayer();
         scheduledExecutor.shutdown();
+        executorService.shutdown();
     }
 
     public static class PlaybackState {
@@ -474,5 +469,55 @@ public class RecordingsViewModel extends AndroidViewModel {
 
     public RecordingRepository getRepository() {
         return repository;
+    }
+
+    public void loadTestData() {
+        LogUtils.logMethodEnter(TAG, "loadTestData");
+        if (isLoading.getValue()) {
+            return;
+        }
+        isLoading.setValue(true);
+        error.setValue(null);
+
+        repository.loadTestData(new RecordingRepository.Callback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                LogUtils.i(TAG, "测试数据加载成功");
+                loadRecordings(true);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                LogUtils.logError(TAG, "测试数据加载失败", e);
+                error.postValue("测试数据加载失败：" + e.getMessage());
+                isLoading.postValue(false);
+            }
+        });
+    }
+
+    public void setSortOption(SortOption option) {
+        LogUtils.i(TAG, "设置排序选项: " + option);
+        currentSortOption.setValue(option);
+    }
+
+    public void setDurationFilter(long min, long max) {
+        LogUtils.i(TAG, String.format("设置时长过滤: %d - %d", min, max));
+        minDuration.setValue(min);
+        maxDuration.setValue(max);
+    }
+
+    public void setDateFilter(long start, long end) {
+        LogUtils.i(TAG, String.format("设置日期过滤: %d - %d", start, end));
+        startDate.setValue(start);
+        endDate.setValue(end);
+    }
+
+    public void clearFilters() {
+        LogUtils.i(TAG, "清除所有过滤条件");
+        minDuration.setValue(0L);
+        maxDuration.setValue(Long.MAX_VALUE);
+        startDate.setValue(0L);
+        endDate.setValue(Long.MAX_VALUE);
+        currentSortOption.setValue(SortOption.DATE_DESC);
     }
 }

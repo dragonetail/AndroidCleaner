@@ -15,19 +15,29 @@
                     <group android:checkableBehavior="single">
                         <item
                             android:id="@+id/time_all"
-                            android:title="全部" />
+                            android:title="全部"
+                            android:checked="true"
+                            style="@style/Widget.App.PopupMenu.Item" />
+                        <item
+                            android:id="@+id/time_year_ago"
+                            android:title="一年以前"
+                            style="@style/Widget.App.PopupMenu.Item" />
                         <item
                             android:id="@+id/time_today"
-                            android:title="今天" />
+                            android:title="今天"
+                            style="@style/Widget.App.PopupMenu.Item" />
                         <item
                             android:id="@+id/time_week"
-                            android:title="最近7天" />
+                            android:title="最近7天"
+                            style="@style/Widget.App.PopupMenu.Item" />
                         <item
                             android:id="@+id/time_month"
-                            android:title="最近30天" />
+                            android:title="最近30天"
+                            style="@style/Widget.App.PopupMenu.Item" />
                         <item
                             android:id="@+id/time_quarter"
-                            android:title="最近90天" />
+                            android:title="最近90天"
+                            style="@style/Widget.App.PopupMenu.Item" />
                     </group>
                 </menu>
             </item>
@@ -39,46 +49,76 @@
                     <group android:checkableBehavior="single">
                         <item
                             android:id="@+id/duration_all"
-                            android:title="全部" />
+                            android:title="全部"
+                            android:checked="true"
+                            style="@style/Widget.App.PopupMenu.Item" />
                         <item
                             android:id="@+id/duration_1min"
-                            android:title="1分钟以内" />
+                            android:title="1分钟以内"
+                            style="@style/Widget.App.PopupMenu.Item" />
                         <item
                             android:id="@+id/duration_5min"
-                            android:title="5分钟以内" />
+                            android:title="5分钟以内"
+                            style="@style/Widget.App.PopupMenu.Item" />
                         <item
                             android:id="@+id/duration_30min"
-                            android:title="30分钟以内" />
+                            android:title="30分钟以内"
+                            style="@style/Widget.App.PopupMenu.Item" />
                         <item
                             android:id="@+id/duration_2hour"
-                            android:title="2小时以内" />
+                            android:title="2小时以内"
+                            style="@style/Widget.App.PopupMenu.Item" />
                         <item
                             android:id="@+id/duration_longer"
-                            android:title="更长" />
+                            android:title="更长"
+                            style="@style/Widget.App.PopupMenu.Item" />
                     </group>
                 </menu>
             </item>
             <item
                 android:id="@+id/menu_sort"
                 android:title="排序"
-                style="@style/Widget.App.PopupMenu.Header">
+                android:icon="@drawable/ic_sort"
+                app:showAsAction="ifRoom">
                 <menu>
-                    <group android:checkableBehavior="single">
-                        <item
-                            android:id="@+id/sort_time_desc"
-                            android:title="时间降序" />
-                        <item
-                            android:id="@+id/sort_time_asc"
-                            android:title="时间升序" />
-                        <item
-                            android:id="@+id/sort_size_desc"
-                            android:title="大小降序" />
-                        <item
-                            android:id="@+id/sort_size_asc"
-                            android:title="大小升序" />
-                    </group>
+                    <item
+                        android:id="@+id/menu_sort_date_asc"
+                        android:title="日期升序"/>
+                    <item
+                        android:id="@+id/menu_sort_date_desc"
+                        android:title="日期降序"/>
+                    <item
+                        android:id="@+id/menu_sort_duration_asc"
+                        android:title="时长升序"/>
+                    <item
+                        android:id="@+id/menu_sort_duration_desc"
+                        android:title="时长降序"/>
+                    <item
+                        android:id="@+id/menu_sort_size_asc"
+                        android:title="大小升序"/>
+                    <item
+                        android:id="@+id/menu_sort_size_desc"
+                        android:title="大小降序"/>
                 </menu>
             </item>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menu_filter"
+        android:title="筛选"
+        android:icon="@drawable/ic_filter"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/menu_filter_date"
+                android:title="按日期筛选"/>
+            <item
+                android:id="@+id/menu_filter_duration"
+                android:title="按时长筛选"/>
+            <item
+                android:id="@+id/menu_clear_filters"
+                android:title="清除筛选"/>
         </menu>
     </item>
 </menu> 

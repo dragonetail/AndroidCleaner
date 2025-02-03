@@ -8,6 +8,7 @@ import com.blackharry.androidcleaner.common.exception.AppException;
 import com.blackharry.androidcleaner.common.exception.ErrorCode;
 import com.blackharry.androidcleaner.common.utils.PerformanceMonitor;
 import com.blackharry.androidcleaner.common.utils.LogUtils;
+import com.blackharry.androidcleaner.common.utils.TestDataGenerator;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -270,6 +271,36 @@ public class RecordingRepository {
                 callback.onError(new AppException(ErrorCode.DATABASE_ERROR, "删除数据库记录失败", e));
             }
             LogUtils.logMethodExit(TAG, "deleteRecordingByPath");
+        });
+    }
+
+    public RecordingDao getRecordingDao() {
+        return recordingDao;
+    }
+
+    public void loadTestData(Callback<Void> callback) {
+        LogUtils.logMethodEnter(TAG, "loadTestData");
+        PerformanceMonitor.startOperation("Recording", "loadTestData");
+        
+        executorService.execute(() -> {
+            try {
+                // 生成测试数据
+                List<RecordingEntity> testRecordings = TestDataGenerator.generateTestRecordings();
+                
+                // 清空现有数据
+                recordingDao.deleteAll();
+                
+                // 插入测试数据
+                recordingDao.insertAll(testRecordings);
+                
+                LogUtils.i(TAG, String.format("成功加载%d条测试数据", testRecordings.size()));
+                PerformanceMonitor.endOperation("Recording", "loadTestData");
+                callback.onSuccess(null);
+            } catch (Exception e) {
+                PerformanceMonitor.recordError("Recording", "loadTestData", e);
+                LogUtils.logError(TAG, "加载测试数据失败", e);
+                callback.onError(e);
+            }
         });
     }
 

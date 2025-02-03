@@ -221,6 +221,8 @@ dependencies {
     // Navigation Component
     implementation("androidx.navigation:navigation-fragment:2.7.6")
     implementation("androidx.navigation:navigation-ui:2.7.6")
+
+    implementation("androidx.preference:preference:1.2.1")
 }
 
 idea {

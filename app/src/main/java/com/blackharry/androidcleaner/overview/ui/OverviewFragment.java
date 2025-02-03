@@ -1,4 +1,4 @@
-package com.blackharry.androidcleaner.overview;
+package com.blackharry.androidcleaner.overview.ui;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.blackharry.androidcleaner.R;
 import com.blackharry.androidcleaner.common.utils.LogUtils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 public class OverviewFragment extends Fragment {
@@ -69,6 +70,21 @@ public class OverviewFragment extends Fragment {
         callCount = view.findViewById(R.id.call_count);
         contactCount = view.findViewById(R.id.contact_count);
         totalDuration = view.findViewById(R.id.total_duration);
+
+        // 初始化重置按钮
+        view.findViewById(R.id.reset_button).setOnClickListener(v -> {
+            new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("确认重置")
+                .setMessage("这将清除所有数据并恢复到初始状态，确定要继续吗？")
+                .setPositiveButton("确定", (dialog, which) -> {
+                    viewModel.resetAppState(() -> {
+                        // 重置成功后重启Activity
+                        requireActivity().recreate();
+                    });
+                })
+                .setNegativeButton("取消", null)
+                .show();
+        });
     }
 
     private void observeViewModel() {
@@ -88,6 +104,17 @@ public class OverviewFragment extends Fragment {
                 callCount.setText(String.valueOf(stats.getCallCount()));
                 contactCount.setText(String.valueOf(stats.getContactCount()));
                 totalDuration.setText(String.format("总通话时长：%s", stats.getFormattedTotalDuration()));
+            });
+
+            // 观察错误信息
+            viewModel.getError().observe(getViewLifecycleOwner(), error -> {
+                if (error != null && !error.isEmpty()) {
+                    new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("错误")
+                        .setMessage(error)
+                        .setPositiveButton("确定", null)
+                        .show();
+                }
             });
         } catch (Exception e) {
             LogUtils.logError(TAG, "数据观察设置失败", e);

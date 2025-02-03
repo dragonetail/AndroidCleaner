@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import com.blackharry.androidcleaner.common.utils.LogUtils;
 import com.blackharry.androidcleaner.contacts.ui.ContactsFragment;
-import com.blackharry.androidcleaner.overview.OverviewFragment;
+import com.blackharry.androidcleaner.overview.ui.OverviewFragment;
 import com.blackharry.androidcleaner.recordings.ui.RecordingsFragment;
 import com.blackharry.androidcleaner.calls.ui.CallsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;

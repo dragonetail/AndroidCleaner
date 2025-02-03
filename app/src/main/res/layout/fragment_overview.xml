@@ -199,6 +199,18 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- 重置按钮 -->
+            <Button
+                android:id="@+id/reset_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:text="恢复到初始状态"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@android:color/holo_red_light"
+                android:layout_gravity="center_horizontal"/>
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

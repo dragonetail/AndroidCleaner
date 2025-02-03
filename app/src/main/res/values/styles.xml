@@ -81,20 +81,19 @@
     </style>
 
     <!-- PopupMenu 样式 -->
-    <style name="Widget.App.PopupMenu" parent="Widget.MaterialComponents.PopupMenu">
+    <style name="Widget.App.PopupMenu" parent="Widget.Material3.PopupMenu">
         <item name="android:itemBackground">@android:color/white</item>
-        <item name="android:popupBackground">@android:color/white</item>
     </style>
 
     <!-- 菜单标题样式 -->
-    <style name="Widget.App.PopupMenu.Header">
-        <item name="android:background">@color/menu_header_bg</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">16sp</item>
+    <style name="Widget.App.PopupMenu.Header" parent="Widget.Material3.PopupMenu">
+        <item name="android:background">@android:color/white</item>
         <item name="android:textColor">@color/text_primary</item>
-        <item name="android:minHeight">48dp</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:paddingStart">16dp</item>
-        <item name="android:paddingEnd">16dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.App.PopupMenu.Item" parent="Widget.Material3.PopupMenu">
+        <item name="android:checkMark">@drawable/ic_radio_button</item>
+        <item name="android:textColor">@color/text_primary</item>
     </style>
 </resources>

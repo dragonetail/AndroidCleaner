@@ -195,10 +195,10 @@ public class RecordingsAdapter extends ListAdapter<RecordingEntity, RecordingsAd
 
         ViewHolder(View view) {
             super(view);
-            recordingName = view.findViewById(R.id.recording_name);
-            recordingDate = view.findViewById(R.id.recording_date);
-            recordingSize = view.findViewById(R.id.recording_size);
-            recordingDuration = view.findViewById(R.id.recording_duration);
+            recordingName = view.findViewById(R.id.file_name);
+            recordingDate = view.findViewById(R.id.file_date);
+            recordingSize = view.findViewById(R.id.file_size);
+            recordingDuration = view.findViewById(R.id.duration);
             playButton = view.findViewById(R.id.play_button);
             checkbox = view.findViewById(R.id.checkbox);
         }

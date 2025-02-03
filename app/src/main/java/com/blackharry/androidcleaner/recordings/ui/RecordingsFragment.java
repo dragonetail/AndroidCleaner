@@ -32,6 +32,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import androidx.core.util.Pair;
+import com.google.android.material.slider.RangeSlider;
 
 public class RecordingsFragment extends Fragment implements RecordingsAdapter.RecordingClickListener {
     private static final String TAG = "RecordingsFragment";
@@ -50,6 +53,19 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         super.onCreate(savedInstanceState);
         LogUtils.logMethodEnter(TAG, "onCreate");
         viewModel = new ViewModelProvider(this).get(RecordingsViewModel.class);
+        
+        // 检查是否需要加载测试数据
+        if (savedInstanceState == null) {
+            // 只在Fragment首次创建时加载测试数据，避免配置变更时重复加载
+            if (viewModel.getRepository().getAllRecordings().isEmpty()) {
+                // 如果没有数据，加载测试数据
+                viewModel.loadTestData();
+            } else {
+                // 如果有数据，直接加载现有数据
+                viewModel.loadRecordings(true);
+            }
+        }
+        
         LogUtils.logMethodExit(TAG, "onCreate");
     }
 
@@ -118,6 +134,9 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
             if (itemId == R.id.time_all) {
                 viewModel.setTimeFilter(RecordingsViewModel.TimeFilter.ALL);
                 return true;
+            } else if (itemId == R.id.time_year_ago) {
+                viewModel.setTimeFilter(RecordingsViewModel.TimeFilter.YEAR_AGO);
+                return true;
             } else if (itemId == R.id.time_today) {
                 viewModel.setTimeFilter(RecordingsViewModel.TimeFilter.TODAY);
                 return true;
@@ -154,16 +173,16 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
             }
             
             // 排序方式
-            else if (itemId == R.id.sort_time_desc) {
+            else if (itemId == R.id.menu_sort_date_desc) {
                 viewModel.setSortOrder(RecordingsViewModel.SortOrder.TIME_DESC);
                 return true;
-            } else if (itemId == R.id.sort_time_asc) {
+            } else if (itemId == R.id.menu_sort_date_asc) {
                 viewModel.setSortOrder(RecordingsViewModel.SortOrder.TIME_ASC);
                 return true;
-            } else if (itemId == R.id.sort_size_desc) {
+            } else if (itemId == R.id.menu_sort_size_desc) {
                 viewModel.setSortOrder(RecordingsViewModel.SortOrder.SIZE_DESC);
                 return true;
-            } else if (itemId == R.id.sort_size_asc) {
+            } else if (itemId == R.id.menu_sort_size_asc) {
                 viewModel.setSortOrder(RecordingsViewModel.SortOrder.SIZE_ASC);
                 return true;
             }
@@ -193,6 +212,7 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
 
     private void updateTimeFilterChecked(Menu menu, RecordingsViewModel.TimeFilter filter) {
         menu.findItem(R.id.time_all).setChecked(filter == RecordingsViewModel.TimeFilter.ALL);
+        menu.findItem(R.id.time_year_ago).setChecked(filter == RecordingsViewModel.TimeFilter.YEAR_AGO);
         menu.findItem(R.id.time_today).setChecked(filter == RecordingsViewModel.TimeFilter.TODAY);
         menu.findItem(R.id.time_week).setChecked(filter == RecordingsViewModel.TimeFilter.WEEK);
         menu.findItem(R.id.time_month).setChecked(filter == RecordingsViewModel.TimeFilter.MONTH);
@@ -209,10 +229,10 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     }
 
     private void updateSortOrderChecked(Menu menu, RecordingsViewModel.SortOrder order) {
-        menu.findItem(R.id.sort_time_desc).setChecked(order == RecordingsViewModel.SortOrder.TIME_DESC);
-        menu.findItem(R.id.sort_time_asc).setChecked(order == RecordingsViewModel.SortOrder.TIME_ASC);
-        menu.findItem(R.id.sort_size_desc).setChecked(order == RecordingsViewModel.SortOrder.SIZE_DESC);
-        menu.findItem(R.id.sort_size_asc).setChecked(order == RecordingsViewModel.SortOrder.SIZE_ASC);
+        menu.findItem(R.id.menu_sort_date_desc).setChecked(order == RecordingsViewModel.SortOrder.TIME_DESC);
+        menu.findItem(R.id.menu_sort_date_asc).setChecked(order == RecordingsViewModel.SortOrder.TIME_ASC);
+        menu.findItem(R.id.menu_sort_size_desc).setChecked(order == RecordingsViewModel.SortOrder.SIZE_DESC);
+        menu.findItem(R.id.menu_sort_size_asc).setChecked(order == RecordingsViewModel.SortOrder.SIZE_ASC);
     }
 
     private void setupRecyclerView() {
@@ -517,5 +537,88 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     private void updateSelectionTitle() {
         int count = adapter.getSelectedItems().size();
         selectionCount.setText(String.format("已选择 %d 项", count));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        
+        if (itemId == R.id.menu_sort_date_asc) {
+            viewModel.setSortOption(RecordingsViewModel.SortOption.DATE_ASC);
+            return true;
+        } else if (itemId == R.id.menu_sort_date_desc) {
+            viewModel.setSortOption(RecordingsViewModel.SortOption.DATE_DESC);
+            return true;
+        } else if (itemId == R.id.menu_sort_duration_asc) {
+            viewModel.setSortOption(RecordingsViewModel.SortOption.DURATION_ASC);
+            return true;
+        } else if (itemId == R.id.menu_sort_duration_desc) {
+            viewModel.setSortOption(RecordingsViewModel.SortOption.DURATION_DESC);
+            return true;
+        } else if (itemId == R.id.menu_sort_size_asc) {
+            viewModel.setSortOption(RecordingsViewModel.SortOption.SIZE_ASC);
+            return true;
+        } else if (itemId == R.id.menu_sort_size_desc) {
+            viewModel.setSortOption(RecordingsViewModel.SortOption.SIZE_DESC);
+            return true;
+        } else if (itemId == R.id.menu_filter_date) {
+            showDateFilterDialog();
+            return true;
+        } else if (itemId == R.id.menu_filter_duration) {
+            showDurationFilterDialog();
+            return true;
+        } else if (itemId == R.id.menu_clear_filters) {
+            viewModel.clearFilters();
+            return true;
+        }
+        
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showDateFilterDialog() {
+        MaterialDatePicker.Builder<Pair<Long, Long>> builder = MaterialDatePicker.Builder.dateRangePicker();
+        builder.setTitleText("选择日期范围");
+        MaterialDatePicker<Pair<Long, Long>> picker = builder.build();
+        
+        picker.addOnPositiveButtonClickListener(selection -> {
+            viewModel.setDateFilter(selection.first, selection.second);
+        });
+        
+        picker.show(getChildFragmentManager(), picker.toString());
+    }
+
+    private void showDurationFilterDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_duration_filter, null);
+        RangeSlider durationSlider = dialogView.findViewById(R.id.duration_slider);
+        TextView minDurationText = dialogView.findViewById(R.id.min_duration_text);
+        TextView maxDurationText = dialogView.findViewById(R.id.max_duration_text);
+
+        durationSlider.setValues(0f, 3600f); // 默认0-60分钟
+        durationSlider.addOnChangeListener((slider, value, fromUser) -> {
+            List<Float> values = slider.getValues();
+            minDurationText.setText(formatDuration(values.get(0).longValue()));
+            maxDurationText.setText(formatDuration(values.get(1).longValue()));
+        });
+
+        new MaterialAlertDialogBuilder(requireContext())
+            .setTitle("选择时长范围")
+            .setView(dialogView)
+            .setPositiveButton("确定", (dialog, which) -> {
+                List<Float> values = durationSlider.getValues();
+                viewModel.setDurationFilter(
+                    values.get(0).longValue() * 1000, // 转换为毫秒
+                    values.get(1).longValue() * 1000
+                );
+            })
+            .setNegativeButton("取消", null)
+            .show();
+    }
+
+    private String formatDuration(long seconds) {
+        if (seconds < 60) {
+            return seconds + "秒";
+        } else {
+            return (seconds / 60) + "分钟";
+        }
     }
 } 
