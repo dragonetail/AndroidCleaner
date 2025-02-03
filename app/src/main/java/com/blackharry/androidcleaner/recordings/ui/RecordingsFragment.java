@@ -56,14 +56,8 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         
         // 检查是否需要加载测试数据
         if (savedInstanceState == null) {
-            // 只在Fragment首次创建时加载测试数据，避免配置变更时重复加载
-            if (viewModel.getRepository().getAllRecordings().isEmpty()) {
-                // 如果没有数据，加载测试数据
-                viewModel.loadTestData();
-            } else {
-                // 如果有数据，直接加载现有数据
-                viewModel.loadRecordings(true);
-            }
+            // 只在Fragment首次创建时检查并加载数据
+            viewModel.checkAndLoadInitialData();
         }
         
         LogUtils.logMethodExit(TAG, "onCreate");
@@ -124,7 +118,6 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     private void setupToolbar() {
         LogUtils.logMethodEnter(TAG, "setupToolbar");
         
-        // 设置菜单资源
         toolbar.inflateMenu(R.menu.menu_recordings);
         
         toolbar.setOnMenuItemClickListener(item -> {
@@ -493,23 +486,13 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     }
 
     private void enterSelectionMode() {
-        LogUtils.logMethodEnter(TAG, "enterSelectionMode");
         isSelectionMode = true;
-        
-        normalAppBar.animate()
-            .alpha(0f)
-            .setDuration(200)
-            .withEndAction(() -> {
-                normalAppBar.setVisibility(View.GONE);
-                selectionAppBar.setVisibility(View.VISIBLE);
-                selectionAppBar.setAlpha(0f);
-                selectionAppBar.animate()
-                    .alpha(1f)
-                    .setDuration(200);
-            });
-        
-        updateSelectionTitle();
+        normalAppBar.setVisibility(View.GONE);
+        selectionAppBar.setVisibility(View.VISIBLE);
+        // 隐藏播放按钮的背景
         adapter.setSelectionMode(true);
+        // 移除多余的空白行
+        updateSelectionTitle();
         adapter.notifyDataSetChanged();
     }
 
@@ -537,42 +520,6 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     private void updateSelectionTitle() {
         int count = adapter.getSelectedItems().size();
         selectionCount.setText(String.format("已选择 %d 项", count));
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-        
-        if (itemId == R.id.menu_sort_date_asc) {
-            viewModel.setSortOption(RecordingsViewModel.SortOption.DATE_ASC);
-            return true;
-        } else if (itemId == R.id.menu_sort_date_desc) {
-            viewModel.setSortOption(RecordingsViewModel.SortOption.DATE_DESC);
-            return true;
-        } else if (itemId == R.id.menu_sort_duration_asc) {
-            viewModel.setSortOption(RecordingsViewModel.SortOption.DURATION_ASC);
-            return true;
-        } else if (itemId == R.id.menu_sort_duration_desc) {
-            viewModel.setSortOption(RecordingsViewModel.SortOption.DURATION_DESC);
-            return true;
-        } else if (itemId == R.id.menu_sort_size_asc) {
-            viewModel.setSortOption(RecordingsViewModel.SortOption.SIZE_ASC);
-            return true;
-        } else if (itemId == R.id.menu_sort_size_desc) {
-            viewModel.setSortOption(RecordingsViewModel.SortOption.SIZE_DESC);
-            return true;
-        } else if (itemId == R.id.menu_filter_date) {
-            showDateFilterDialog();
-            return true;
-        } else if (itemId == R.id.menu_filter_duration) {
-            showDurationFilterDialog();
-            return true;
-        } else if (itemId == R.id.menu_clear_filters) {
-            viewModel.clearFilters();
-            return true;
-        }
-        
-        return super.onOptionsItemSelected(item);
     }
 
     private void showDateFilterDialog() {

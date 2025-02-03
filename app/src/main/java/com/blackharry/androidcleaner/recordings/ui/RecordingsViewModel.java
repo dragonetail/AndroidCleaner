@@ -520,4 +520,28 @@ public class RecordingsViewModel extends AndroidViewModel {
         endDate.setValue(Long.MAX_VALUE);
         currentSortOption.setValue(SortOption.DATE_DESC);
     }
+
+    public void checkAndLoadInitialData() {
+        LogUtils.logMethodEnter(TAG, "checkAndLoadInitialData");
+        
+        repository.getRecordings(new RecordingRepository.Callback<List<RecordingEntity>>() {
+            @Override
+            public void onSuccess(List<RecordingEntity> result) {
+                if (result.isEmpty()) {
+                    // 如果没有数据，加载测试数据
+                    loadTestData();
+                } else {
+                    // 如果有数据，直接加载现有数据
+                    loadRecordings(true);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                LogUtils.e(TAG, "检查初始数据失败", e);
+                // 发生错误时，尝试加载测试数据
+                loadTestData();
+            }
+        });
+    }
 }
