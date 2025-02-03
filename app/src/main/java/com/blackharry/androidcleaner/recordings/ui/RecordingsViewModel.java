@@ -509,4 +509,8 @@ public class RecordingsViewModel extends AndroidViewModel {
             this.isPlaying = isPlaying;
         }
     }
+
+    public RecordingRepository getRepository() {
+        return repository;
+    }
 }

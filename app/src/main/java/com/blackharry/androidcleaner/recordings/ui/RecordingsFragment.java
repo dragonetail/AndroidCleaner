@@ -38,11 +38,9 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     private View normalAppBar;
     private View selectionAppBar;
     private TextView selectionCount;
-    private BottomAppBar selectionBottomBar;
     private RecyclerView recordingsList;
     private androidx.appcompat.widget.Toolbar toolbar;
     private boolean isSelectionMode = false;
-    private BottomNavigationView selectionBottomNav;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,6 +79,7 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
                     if (isSelectionMode) {
                         exitSelectionMode();
                     } else {
+                        setEnabled(false);
                         requireActivity().getOnBackPressedDispatcher().onBackPressed();
                     }
                 }
@@ -94,12 +93,13 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         normalAppBar = view.findViewById(R.id.normal_app_bar);
         selectionAppBar = view.findViewById(R.id.selection_app_bar);
         selectionCount = view.findViewById(R.id.selection_count);
-        selectionBottomBar = view.findViewById(R.id.selection_bottom_bar);
         recordingsList = view.findViewById(R.id.recordings_list);
         toolbar = view.findViewById(R.id.toolbar);
 
         view.findViewById(R.id.close_selection_button).setOnClickListener(v -> exitSelectionMode());
-        setupBottomBar();
+        view.findViewById(R.id.action_delete).setOnClickListener(v -> deleteSelectedItems());
+        view.findViewById(R.id.action_select_all).setOnClickListener(v -> selectAllItems());
+        view.findViewById(R.id.action_more).setOnClickListener(v -> showMoreOptions(v));
     }
 
     private void setupToolbar() {
@@ -161,128 +161,6 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
             
             return false;
         });
-    }
-
-    private void setupBottomBar() {
-        LogUtils.logMethodEnter(TAG, "setupBottomBar");
-        
-        selectionBottomBar.setOnMenuItemClickListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.action_share) {
-                shareSelectedRecordings();
-                return true;
-            } else if (itemId == R.id.action_delete) {
-                deleteSelectedRecordings();
-                return true;
-            } else if (itemId == R.id.action_more) {
-                showMoreOptions();
-                return true;
-            }
-            return false;
-        });
-    }
-
-    private void showMoreOptions() {
-        LogUtils.logMethodEnter(TAG, "showMoreOptions");
-        
-        PopupMenu popup = new PopupMenu(requireContext(), selectionBottomBar);
-        popup.getMenu().add(Menu.NONE, 1, Menu.NONE, "全选");
-        popup.getMenu().add(Menu.NONE, 2, Menu.NONE, "重命名");
-        popup.getMenu().add(Menu.NONE, 3, Menu.NONE, "详情");
-        popup.getMenu().add(Menu.NONE, 4, Menu.NONE, "添加标签");
-        popup.getMenu().add(Menu.NONE, 5, Menu.NONE, "导出");
-        
-        popup.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case 1:
-                    selectAllRecordings();
-                    return true;
-                case 2:
-                    // TODO: 实现重命名功能
-                    return true;
-                case 3:
-                    showRecordingDetails();
-                    return true;
-                case 4:
-                    // TODO: 实现标签功能
-                    return true;
-                case 5:
-                    // TODO: 实现导出功能
-                    return true;
-            }
-            return false;
-        });
-        
-        popup.show();
-    }
-
-    private void enterSelectionMode() {
-        LogUtils.logMethodEnter(TAG, "enterSelectionMode");
-        isSelectionMode = true;
-        
-        normalAppBar.animate()
-            .alpha(0f)
-            .setDuration(200)
-            .withEndAction(() -> {
-                normalAppBar.setVisibility(View.GONE);
-                selectionAppBar.setVisibility(View.VISIBLE);
-                selectionAppBar.setAlpha(0f);
-                selectionAppBar.animate()
-                    .alpha(1f)
-                    .setDuration(200);
-            });
-        
-        selectionBottomBar.setVisibility(View.VISIBLE);
-        selectionBottomBar.setTranslationY(selectionBottomBar.getHeight());
-        selectionBottomBar.animate()
-            .translationY(0f)
-            .setDuration(200);
-        
-        updateSelectionTitle();
-        adapter.setSelectionMode(true);
-        adapter.notifyDataSetChanged();
-    }
-
-    private void exitSelectionMode() {
-        LogUtils.logMethodEnter(TAG, "exitSelectionMode");
-        isSelectionMode = false;
-        
-        selectionAppBar.animate()
-            .alpha(0f)
-            .setDuration(200)
-            .withEndAction(() -> {
-                selectionAppBar.setVisibility(View.GONE);
-                normalAppBar.setVisibility(View.VISIBLE);
-                normalAppBar.setAlpha(0f);
-                normalAppBar.animate()
-                    .alpha(1f)
-                    .setDuration(200);
-            });
-        
-        selectionBottomBar.animate()
-            .translationY(selectionBottomBar.getHeight())
-            .setDuration(200)
-            .withEndAction(() -> selectionBottomBar.setVisibility(View.GONE));
-        
-        adapter.setSelectionMode(false);
-        adapter.clearSelection();
-        adapter.notifyDataSetChanged();
-    }
-
-    private void updateSelectionTitle() {
-        int count = adapter.getSelectedItems().size();
-        selectionCount.setText(String.format("已选择 %d 项", count));
-        
-        Menu menu = selectionBottomBar.getMenu();
-        menu.findItem(R.id.action_share).setEnabled(count > 0);
-        menu.findItem(R.id.action_delete).setEnabled(count > 0);
-        menu.findItem(R.id.action_more).setEnabled(count > 0);
-        
-        if (count > 0) {
-            selectionBottomBar.setElevation(8f);
-        } else {
-            selectionBottomBar.setElevation(0f);
-        }
     }
 
     private void setupRecyclerView() {
@@ -414,87 +292,152 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
         viewModel.stopPlayback();
     }
 
-    private void shareSelectedRecordings() {
-        LogUtils.logMethodEnter(TAG, "shareSelectedRecordings");
+    private void deleteSelectedItems() {
+        LogUtils.logMethodEnter(TAG, "deleteSelectedItems");
         
-        Set<String> selectedItems = adapter.getSelectedItems();
-        if (!selectedItems.isEmpty()) {
-            ArrayList<Uri> uris = new ArrayList<>();
-            for (String filePath : selectedItems) {
-                File file = new File(filePath);
-                if (file.exists()) {
-                    uris.add(Uri.fromFile(file));
-                }
-            }
-            
-            if (!uris.isEmpty()) {
-                Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                shareIntent.setType("audio/*");
-                shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                startActivity(Intent.createChooser(shareIntent, "分享录音"));
-            }
-        }
-    }
-
-    private void deleteSelectedRecordings() {
         Set<String> selectedItems = adapter.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("删除录音")
                 .setMessage(String.format("确定要删除选中的%d个录音文件吗？", selectedItems.size()))
                 .setPositiveButton("删除", (dialog, which) -> {
-                    // 删除录音
+                    LogUtils.logMethodEnter(TAG, "deleteSelectedItems.onPositiveButton");
+                    // 删除录音文件和数据库记录
+                    int totalCount = selectedItems.size();
+                    int failCount = 0;
+                    
                     for (String filePath : selectedItems) {
-                        File file = new File(filePath);
-                        if (file.exists()) {
-                            file.delete();
+                        try {
+                            File file = new File(filePath);
+                            // 如果文件存在且删除失败，则不删除数据库记录
+                            if (file.exists() && !file.delete()) {
+                                failCount++;
+                                LogUtils.e(TAG, "文件删除失败: " + filePath);
+                                continue;
+                            }
+                            // 无论文件是否存在，都删除数据库记录
+                            viewModel.getRepository().deleteRecordingByPath(filePath);
+                            LogUtils.i(TAG, "成功删除记录: " + filePath);
+                        } catch (Exception e) {
+                            failCount++;
+                            LogUtils.e(TAG, "删除操作失败: " + filePath, e);
                         }
                     }
+                    
+                    // 显示删除结果
+                    String message;
+                    if (failCount == 0) {
+                        message = String.format("已成功删除%d个录音", totalCount);
+                    } else {
+                        message = String.format("已删除%d个录音，%d个删除失败", totalCount - failCount, failCount);
+                    }
+                    Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show();
+                    
+                    // 刷新列表并退出选择模式
                     viewModel.loadRecordings(true);
                     exitSelectionMode();
+                    LogUtils.logMethodExit(TAG, "deleteSelectedItems.onPositiveButton");
                 })
                 .setNegativeButton("取消", null)
                 .show();
         }
+        LogUtils.logMethodExit(TAG, "deleteSelectedItems");
     }
 
-    private void selectAllRecordings() {
+    private void selectAllItems() {
+        LogUtils.logMethodEnter(TAG, "selectAllItems");
+        
         List<RecordingEntity> allRecordings = adapter.getCurrentList();
+        boolean hasUnselectedItems = false;
+        
+        // 检查是否有未选中的项
         for (RecordingEntity recording : allRecordings) {
-            adapter.toggleSelection(recording.getFilePath());
+            if (!adapter.isSelected(recording.getFilePath())) {
+                hasUnselectedItems = true;
+                break;
+            }
         }
+        
+        // 如果有未选中的项，则全选；否则取消全选
+        for (RecordingEntity recording : allRecordings) {
+            if (hasUnselectedItems) {
+                adapter.addSelection(recording.getFilePath());
+            } else {
+                adapter.removeSelection(recording.getFilePath());
+            }
+        }
+        
+        // 更新UI
+        updateSelectionTitle();
+        adapter.notifyDataSetChanged();
+        
+        LogUtils.logMethodExit(TAG, "selectAllItems");
     }
 
-    private void showRecordingDetails() {
-        Set<String> selectedItems = adapter.getSelectedItems();
-        if (selectedItems.size() == 1) {
-            String filePath = selectedItems.iterator().next();
-            RecordingEntity recording = null;
-            for (RecordingEntity item : adapter.getCurrentList()) {
-                if (item.getFilePath().equals(filePath)) {
-                    recording = item;
-                    break;
-                }
+    private void showMoreOptions(View anchor) {
+        PopupMenu popup = new PopupMenu(requireContext(), anchor);
+        popup.getMenuInflater().inflate(R.menu.menu_recordings_selection_more, popup.getMenu());
+        popup.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.action_share) {
+                // 实现分享逻辑
+                return true;
+            } else if (itemId == R.id.action_convert_text) {
+                // 实现转文字逻辑
+                return true;
+            } else if (itemId == R.id.action_rename) {
+                // 实现重命名逻辑
+                return true;
             }
-            
-            if (recording != null) {
-                new MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("录音详情")
-                    .setMessage(String.format(
-                        "文件名：%s\n" +
-                        "创建时间：%s\n" +
-                        "时长：%s\n" +
-                        "大小：%s\n" +
-                        "路径：%s",
-                        recording.getFileName(),
-                        FormatUtils.formatDate(recording.getCreationTime()),
-                        FormatUtils.formatDuration(recording.getDuration()),
-                        FormatUtils.formatFileSize(requireContext(), recording.getFileSize()),
-                        recording.getFilePath()
-                    ))
-                    .setPositiveButton("确定", null)
-                    .show();
-            }
-        }
+            return false;
+        });
+        popup.show();
+    }
+
+    private void enterSelectionMode() {
+        LogUtils.logMethodEnter(TAG, "enterSelectionMode");
+        isSelectionMode = true;
+        
+        normalAppBar.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction(() -> {
+                normalAppBar.setVisibility(View.GONE);
+                selectionAppBar.setVisibility(View.VISIBLE);
+                selectionAppBar.setAlpha(0f);
+                selectionAppBar.animate()
+                    .alpha(1f)
+                    .setDuration(200);
+            });
+        
+        updateSelectionTitle();
+        adapter.setSelectionMode(true);
+        adapter.notifyDataSetChanged();
+    }
+
+    private void exitSelectionMode() {
+        LogUtils.logMethodEnter(TAG, "exitSelectionMode");
+        isSelectionMode = false;
+
+        selectionAppBar.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction(() -> {
+                selectionAppBar.setVisibility(View.GONE);
+                normalAppBar.setVisibility(View.VISIBLE);
+                normalAppBar.setAlpha(0f);
+                normalAppBar.animate()
+                    .alpha(1f)
+                    .setDuration(200);
+            });
+
+        adapter.setSelectionMode(false);
+        adapter.clearSelection();
+        adapter.notifyDataSetChanged();
+    }
+
+    private void updateSelectionTitle() {
+        int count = adapter.getSelectedItems().size();
+        selectionCount.setText(String.format("已选择 %d 项", count));
     }
 } 

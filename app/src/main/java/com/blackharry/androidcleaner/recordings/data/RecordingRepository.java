@@ -258,6 +258,18 @@ public class RecordingRepository {
         }
     }
 
+    public void deleteRecordingByPath(String filePath) {
+        LogUtils.logMethodEnter(TAG, "deleteRecordingByPath");
+        try {
+            recordingDao.deleteByPath(filePath);
+            LogUtils.i(TAG, "成功删除数据库记录: " + filePath);
+        } catch (Exception e) {
+            LogUtils.e(TAG, "删除数据库记录失败: " + filePath, e);
+            throw new AppException(ErrorCode.DATABASE_ERROR, "删除数据库记录失败", e);
+        }
+        LogUtils.logMethodExit(TAG, "deleteRecordingByPath");
+    }
+
     public interface Callback<T> {
         void onSuccess(T result);
         void onError(Exception e);
