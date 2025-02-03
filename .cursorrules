@@ -87,7 +87,8 @@
         "frameworks": [
             "JUnit",
             "Espresso"
-        ]
+        ],
+        "coverage": 80
     },
     "linting": {
         "ignorePatterns": [
@@ -337,6 +338,178 @@
                     "app:layout_constraint.*"
                 ]
             }
+        }
+    },
+    "directory_structure": {
+        "root": {
+            "readme": "README.md",
+            "description": "项目根目录，包含整体设计及开发原则"
+        }
+    },
+    "documentation": {
+        "README.md": {
+            "sections": [
+                { "title": "快速开始", "required": true },
+                { "title": "核心功能", "required": true },
+                { "title": "技术实现", "required": true },
+                { "title": "界面规范", "required": true },
+                { "title": "开发规范", "required": true },
+                { "title": "项目协作", "required": true },
+                { "title": "运维支持", "required": true },
+                { "title": "附录", "required": true },
+                { "title": "Cursor+AI相关", "required": true },
+                { "title": "更新日志", "required": true }
+            ]
+        }
+    },
+    "commit_rules": {
+        "message_format": "简洁明了，描述变更内容",
+        "require_issue_reference": false
+    },
+    "contribution_guidelines": {
+        "enabled": false
+    },
+    "miscellaneous": {
+        "enforce_consistency": true,
+        "require_review": true
+    },
+    "todoManagement": {
+        "file": "./TODO.md",
+        "autoRecord": true,
+        "recordContent": {
+            "fields": [
+                "序号",
+                "标题",
+                "记录时间",
+                "状态",
+                "摘要",
+                "详细描述",
+                "备注"
+            ],
+            "statusOptions": [
+                "未完成",
+                "进行中",
+                "已完成"
+            ]
+        },
+        "autoUpdate": true,
+        "gitIntegration": {
+            "autoCommit": true,
+            "autoPush": true
+        }
+    },
+    "automation": {
+        "commit": {
+            "description": "自动提交所有修改的代码并推送到GIT",
+            "enabled": true
+        },
+        "build": {
+            "compile": "./gradlew installDebug",
+            "cleanCompile": "./gradlew clean installDebug",
+            "run": "./run-app.sh"
+        },
+        "documentation": {
+            "autoValidateAndUpdate": true,
+            "generateMissing": true
+        },
+        "comments": {
+            "autoComplete": true,
+            "commitAfterFiles": 10
+        },
+        "codeCheck": {
+            "enabled": true,
+            "checkFile": "./qreports/check-<日期时间>.md",
+            "reportFile": "./qreports/report-<日期时间>.md",
+            "maxIssuesBeforePause": 5,
+            "checkPoints": [
+                "命名规范",
+                "代码规范",
+                "日志规范",
+                "注释规范及完善",
+                "潜在缺陷",
+                "性能隐患",
+                "安全问题"
+            ],
+            "autoCommit": true,
+            "autoPush": true
+        },
+        "historySearch": {
+            "maxResults": 10,
+            "displayFields": [
+                "序号",
+                "日志文件名",
+                "履历时间",
+                "履历摘要"
+            ],
+            "highlight": true
+        },
+        "todoSearch": {
+            "highlightFirstUnfinished": true
+        },
+        "todoComplete": {
+            "autoUpdate": true,
+            "gitIntegration": {
+                "autoCommit": true,
+                "autoPush": true
+            }
+        }
+    },
+    "cursorAI": {
+        "commands": {
+            "submit": "自动提交所有修改的代码并推送到GIT",
+            "compile": "./gradlew installDebug",
+            "cleanCompile": "./gradlew clean installDebug",
+            "run": "./run-app.sh",
+            "document": "自动校验和更新所有目录下的README文档，没有的自动生成",
+            "comment": "自动补全代码注释，并每更新10个文件自动提交一次GIT",
+            "check": {
+                "description": "自动检查代码中存在的问题，整理问题并提交给用户进行确认，根据反馈执行修复",
+                "steps": [
+                    "生成检查记录文件，文件名：[./qreports/check-<日期时间>.md]",
+                    "记录检查的目录、文件、问题等",
+                    "每次整理超过5个问题，停止检查，等待用户确认",
+                    "用户确认并修改后，提交GIT，然后继续检查",
+                    "生成问题报告文件，文件名：[./qreports/report-<日期时间>.md]",
+                    "报告内容简明，汇总问题分类，问题清单及要点描述",
+                    "自动追加到GIT"
+                ],
+                "checkPoints": [
+                    "命名规范",
+                    "代码规范",
+                    "日志规范",
+                    "注释规范及完善",
+                    "潜在缺陷",
+                    "性能隐患",
+                    "安全问题"
+                ]
+            }
+        }
+    },
+    "historyManagement": {
+        "directory": "./history",
+        "fileNaming": "history-<日期时间>.md",
+        "recordContent": {
+            "fields": [
+                "请求时间",
+                "请求内容",
+                "请求结果",
+                "请求耗时"
+            ]
+        },
+        "autoUpdate": true,
+        "gitIntegration": {
+            "autoCommit": true,
+            "autoPush": true
+        },
+        "search": {
+            "maxResults": 10,
+            "displayFields": [
+                "序号",
+                "日志文件名",
+                "履历时间",
+                "履历摘要"
+            ],
+            "highlight": true
         }
     }
 } 
