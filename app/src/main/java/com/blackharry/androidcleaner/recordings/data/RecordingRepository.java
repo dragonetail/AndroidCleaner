@@ -258,16 +258,19 @@ public class RecordingRepository {
         }
     }
 
-    public void deleteRecordingByPath(String filePath) {
+    public void deleteRecordingByPath(String filePath, Callback<Void> callback) {
         LogUtils.logMethodEnter(TAG, "deleteRecordingByPath");
-        try {
-            recordingDao.deleteByPath(filePath);
-            LogUtils.i(TAG, "成功删除数据库记录: " + filePath);
-        } catch (Exception e) {
-            LogUtils.e(TAG, "删除数据库记录失败: " + filePath, e);
-            throw new AppException(ErrorCode.DATABASE_ERROR, "删除数据库记录失败", e);
-        }
-        LogUtils.logMethodExit(TAG, "deleteRecordingByPath");
+        executorService.execute(() -> {
+            try {
+                recordingDao.deleteByPath(filePath);
+                LogUtils.i(TAG, "成功删除数据库记录: " + filePath);
+                callback.onSuccess(null);
+            } catch (Exception e) {
+                LogUtils.e(TAG, "删除数据库记录失败: " + filePath, e);
+                callback.onError(new AppException(ErrorCode.DATABASE_ERROR, "删除数据库记录失败", e));
+            }
+            LogUtils.logMethodExit(TAG, "deleteRecordingByPath");
+        });
     }
 
     public interface Callback<T> {

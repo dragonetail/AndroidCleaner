@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -19,9 +20,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.blackharry.androidcleaner.R;
 import com.blackharry.androidcleaner.recordings.data.RecordingEntity;
+import com.blackharry.androidcleaner.recordings.data.RecordingRepository;
 import com.blackharry.androidcleaner.common.utils.LogUtils;
 import com.blackharry.androidcleaner.common.utils.FormatUtils;
 import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -105,6 +108,9 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
     private void setupToolbar() {
         LogUtils.logMethodEnter(TAG, "setupToolbar");
         
+        // 设置菜单资源
+        toolbar.inflateMenu(R.menu.menu_recordings);
+        
         toolbar.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             
@@ -127,7 +133,10 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
             }
             
             // 时长过滤
-            else if (itemId == R.id.duration_1min) {
+            else if (itemId == R.id.duration_all) {
+                viewModel.setDurationFilter(RecordingsViewModel.DurationFilter.ALL);
+                return true;
+            } else if (itemId == R.id.duration_1min) {
                 viewModel.setDurationFilter(RecordingsViewModel.DurationFilter.MIN_1);
                 return true;
             } else if (itemId == R.id.duration_5min) {
@@ -161,6 +170,49 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
             
             return false;
         });
+
+        // 设置菜单准备监听器，用于更新选中状态
+        toolbar.setOnMenuItemClickListener(item -> {
+            Menu menu = toolbar.getMenu();
+            
+            // 更新时间过滤选中状态
+            RecordingsViewModel.TimeFilter timeFilter = viewModel.getCurrentTimeFilter();
+            updateTimeFilterChecked(menu, timeFilter);
+            
+            // 更新时长过滤选中状态
+            RecordingsViewModel.DurationFilter durationFilter = viewModel.getCurrentDurationFilter();
+            updateDurationFilterChecked(menu, durationFilter);
+            
+            // 更新排序方式选中状态
+            RecordingsViewModel.SortOrder sortOrder = viewModel.getCurrentSortOrder();
+            updateSortOrderChecked(menu, sortOrder);
+            
+            return false;
+        });
+    }
+
+    private void updateTimeFilterChecked(Menu menu, RecordingsViewModel.TimeFilter filter) {
+        menu.findItem(R.id.time_all).setChecked(filter == RecordingsViewModel.TimeFilter.ALL);
+        menu.findItem(R.id.time_today).setChecked(filter == RecordingsViewModel.TimeFilter.TODAY);
+        menu.findItem(R.id.time_week).setChecked(filter == RecordingsViewModel.TimeFilter.WEEK);
+        menu.findItem(R.id.time_month).setChecked(filter == RecordingsViewModel.TimeFilter.MONTH);
+        menu.findItem(R.id.time_quarter).setChecked(filter == RecordingsViewModel.TimeFilter.QUARTER);
+    }
+
+    private void updateDurationFilterChecked(Menu menu, RecordingsViewModel.DurationFilter filter) {
+        menu.findItem(R.id.duration_all).setChecked(filter == RecordingsViewModel.DurationFilter.ALL);
+        menu.findItem(R.id.duration_1min).setChecked(filter == RecordingsViewModel.DurationFilter.MIN_1);
+        menu.findItem(R.id.duration_5min).setChecked(filter == RecordingsViewModel.DurationFilter.MIN_5);
+        menu.findItem(R.id.duration_30min).setChecked(filter == RecordingsViewModel.DurationFilter.MIN_30);
+        menu.findItem(R.id.duration_2hour).setChecked(filter == RecordingsViewModel.DurationFilter.HOUR_2);
+        menu.findItem(R.id.duration_longer).setChecked(filter == RecordingsViewModel.DurationFilter.LONGER);
+    }
+
+    private void updateSortOrderChecked(Menu menu, RecordingsViewModel.SortOrder order) {
+        menu.findItem(R.id.sort_time_desc).setChecked(order == RecordingsViewModel.SortOrder.TIME_DESC);
+        menu.findItem(R.id.sort_time_asc).setChecked(order == RecordingsViewModel.SortOrder.TIME_ASC);
+        menu.findItem(R.id.sort_size_desc).setChecked(order == RecordingsViewModel.SortOrder.SIZE_DESC);
+        menu.findItem(R.id.sort_size_asc).setChecked(order == RecordingsViewModel.SortOrder.SIZE_ASC);
     }
 
     private void setupRecyclerView() {
@@ -303,40 +355,66 @@ public class RecordingsFragment extends Fragment implements RecordingsAdapter.Re
                 .setPositiveButton("删除", (dialog, which) -> {
                     LogUtils.logMethodEnter(TAG, "deleteSelectedItems.onPositiveButton");
                     // 删除录音文件和数据库记录
-                    int totalCount = selectedItems.size();
-                    int failCount = 0;
+                    int[] totalCount = {selectedItems.size()};
+                    int[] failCount = {0};
+                    int[] completedCount = {0};
+                    
+                    // 创建检查完成的 Runnable
+                    final Runnable checkCompletion = () -> {
+                        if (completedCount[0] == totalCount[0]) {
+                            requireActivity().runOnUiThread(() -> {
+                                // 显示删除结果
+                                String message;
+                                if (failCount[0] == 0) {
+                                    message = String.format("已成功删除%d个录音", totalCount[0]);
+                                } else {
+                                    message = String.format("已删除%d个录音，%d个删除失败", 
+                                        totalCount[0] - failCount[0], failCount[0]);
+                                }
+                                Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show();
+                                
+                                // 刷新列表并退出选择模式
+                                viewModel.loadRecordings(true);
+                                exitSelectionMode();
+                            });
+                        }
+                    };
                     
                     for (String filePath : selectedItems) {
                         try {
                             File file = new File(filePath);
                             // 如果文件存在且删除失败，则不删除数据库记录
                             if (file.exists() && !file.delete()) {
-                                failCount++;
+                                failCount[0]++;
+                                completedCount[0]++;
                                 LogUtils.e(TAG, "文件删除失败: " + filePath);
+                                checkCompletion.run();
                                 continue;
                             }
                             // 无论文件是否存在，都删除数据库记录
-                            viewModel.getRepository().deleteRecordingByPath(filePath);
-                            LogUtils.i(TAG, "成功删除记录: " + filePath);
+                            viewModel.getRepository().deleteRecordingByPath(filePath, new RecordingRepository.Callback<Void>() {
+                                @Override
+                                public void onSuccess(Void result) {
+                                    LogUtils.i(TAG, "成功删除记录: " + filePath);
+                                    completedCount[0]++;
+                                    checkCompletion.run();
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    failCount[0]++;
+                                    completedCount[0]++;
+                                    LogUtils.e(TAG, "删除操作失败: " + filePath, e);
+                                    checkCompletion.run();
+                                }
+                            });
                         } catch (Exception e) {
-                            failCount++;
+                            failCount[0]++;
+                            completedCount[0]++;
                             LogUtils.e(TAG, "删除操作失败: " + filePath, e);
+                            checkCompletion.run();
                         }
                     }
-                    
-                    // 显示删除结果
-                    String message;
-                    if (failCount == 0) {
-                        message = String.format("已成功删除%d个录音", totalCount);
-                    } else {
-                        message = String.format("已删除%d个录音，%d个删除失败", totalCount - failCount, failCount);
-                    }
-                    Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show();
-                    
-                    // 刷新列表并退出选择模式
-                    viewModel.loadRecordings(true);
-                    exitSelectionMode();
-                    LogUtils.logMethodExit(TAG, "deleteSelectedItems.onPositiveButton");
                 })
                 .setNegativeButton("取消", null)
                 .show();

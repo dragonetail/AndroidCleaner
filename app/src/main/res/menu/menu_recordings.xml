@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_more"
+        android:icon="@drawable/ic_more_vert"
+        android:title="更多"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/menu_time"
+                android:title="时间"
+                style="@style/MenuHeaderStyle">
+                <menu>
+                    <group android:checkableBehavior="single">
+                        <item
+                            android:id="@+id/time_all"
+                            android:title="全部" />
+                        <item
+                            android:id="@+id/time_today"
+                            android:title="今天" />
+                        <item
+                            android:id="@+id/time_week"
+                            android:title="最近7天" />
+                        <item
+                            android:id="@+id/time_month"
+                            android:title="最近30天" />
+                        <item
+                            android:id="@+id/time_quarter"
+                            android:title="最近90天" />
+                    </group>
+                </menu>
+            </item>
+            <item
+                android:id="@+id/menu_duration"
+                android:title="时长"
+                style="@style/MenuHeaderStyle">
+                <menu>
+                    <group android:checkableBehavior="single">
+                        <item
+                            android:id="@+id/duration_all"
+                            android:title="全部" />
+                        <item
+                            android:id="@+id/duration_1min"
+                            android:title="1分钟以内" />
+                        <item
+                            android:id="@+id/duration_5min"
+                            android:title="5分钟以内" />
+                        <item
+                            android:id="@+id/duration_30min"
+                            android:title="30分钟以内" />
+                        <item
+                            android:id="@+id/duration_2hour"
+                            android:title="2小时以内" />
+                        <item
+                            android:id="@+id/duration_longer"
+                            android:title="更长" />
+                    </group>
+                </menu>
+            </item>
+            <item
+                android:id="@+id/menu_sort"
+                android:title="排序"
+                style="@style/MenuHeaderStyle">
+                <menu>
+                    <group android:checkableBehavior="single">
+                        <item
+                            android:id="@+id/sort_time_desc"
+                            android:title="时间降序" />
+                        <item
+                            android:id="@+id/sort_time_asc"
+                            android:title="时间升序" />
+                        <item
+                            android:id="@+id/sort_size_desc"
+                            android:title="大小降序" />
+                        <item
+                            android:id="@+id/sort_size_asc"
+                            android:title="大小升序" />
+                    </group>
+                </menu>
+            </item>
+        </menu>
+    </item>
+</menu> 

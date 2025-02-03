@@ -20,8 +20,7 @@
             android:background="@android:color/white"
             android:elevation="4dp"
             app:theme="@style/ThemeOverlay.App.Toolbar.Center"
-            app:title="@string/title_bar_recordings"
-            app:menu="@menu/menu_recordings_filter"/>
+            app:title="@string/title_bar_recordings"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
