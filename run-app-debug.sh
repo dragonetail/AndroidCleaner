@@ -7,7 +7,7 @@
 chmod +x gradlew
 
 # 清理并安装debug版本
-./gradlew clean installDebug
+# ./gradlew clean installDebug
 
 # 如果安装成功，启动应用
 if [ $? -eq 0 ]; then
@@ -23,5 +23,5 @@ else
     exit 1
 fi 
 
-adb logcat
-#adb logcat | grep com.blackharry.androidcleaner.debug
+# adb logcat
+adb logcat | grep com.blackharry.androidcleaner.debug

@@ -66,12 +66,9 @@
                 tools:text="已选择 2 项"/>
 
             <!-- 右侧功能菜单区 -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="end|center_vertical"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
                 <ImageButton
                     android:id="@+id/action_delete"
@@ -80,7 +77,10 @@
                     android:padding="12dp"
                     android:src="@drawable/ic_delete"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/delete"/>
+                    android:contentDescription="@string/delete"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
                 <ImageButton
                     android:id="@+id/action_select_all"
@@ -89,7 +89,10 @@
                     android:padding="12dp"
                     android:src="@drawable/ic_select_all"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/select_all"/>
+                    android:contentDescription="@string/select_all"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
                 <ImageButton
                     android:id="@+id/action_more"
@@ -98,9 +101,12 @@
                     android:padding="12dp"
                     android:src="@drawable/ic_more_vert"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/more_options"/>
+                    android:contentDescription="@string/more_options"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.appcompat.widget.Toolbar>
 

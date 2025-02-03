@@ -148,5 +148,34 @@
                 "performanceMonitoring": true
             }
         }
+    },
+    "interaction": {
+        "style": {
+            "responseStyle": "concise",
+            "focusOnCodeChanges": true,
+            "minimizeExplanations": true
+        },
+        "gitIntegration": {
+            "enabled": true,
+            "autoCommit": {
+                "trigger": "userCommand",
+                "keywords": ["提交"],
+                "autoPush": true
+            }
+        },
+        "autoCompileAndTest": {
+            "enabled": true,
+            "triggers": [
+                "configChange"
+            ]
+        },
+        "composerPrinciples": {
+            "conciseness": true,
+            "contextSelection": "README.md",
+            "commands": {
+                "编译": "./gradlew clean installDebug",
+                "运行": "./run-app.sh"
+            }
+        }
     }
 } 
