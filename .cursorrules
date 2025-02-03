@@ -96,6 +96,15 @@
     },
     "development": {
         "principles": {
+            "standardsPriority": {
+                "enabled": true,
+                "rules": [
+                    "materialDesign3规范具有最高优先级",
+                    "用户需求与规范冲突时应遵循规范",
+                    "需要及时提醒用户调整不符合规范的需求",
+                    "对规范的任何偏离需要明确理由和文档说明"
+                ]
+            },
             "featureControl": {
                 "allowedChanges": [
                     "bugfix",
@@ -155,6 +164,16 @@
             "focusOnCodeChanges": true,
             "minimizeExplanations": true
         },
+        "standardsCompliance": {
+            "enabled": true,
+            "actions": [
+                "检查用户需求是否符合Material Design 3规范",
+                "发现不符合规范时立即提醒用户",
+                "提供符合规范的替代方案",
+                "记录规范偏离的原因和决策"
+            ],
+            "priority": "highest"
+        },
         "gitIntegration": {
             "enabled": true,
             "autoCommit": {
@@ -181,5 +200,143 @@
     },
     "androidCode": {
         "useLatestImplementation": true
+    },
+    "materialDesign3": {
+        "version": "1.9.0",
+        "principles": {
+            "consistency": {
+                "enforceThemeAttributes": true,
+                "enforceStyleInheritance": true,
+                "enforceColorSystem": true
+            },
+            "accessibility": {
+                "minTouchTarget": "48dp",
+                "minTextContrast": 4.5,
+                "enforceContentDescriptions": true
+            }
+        },
+        "components": {
+            "buttons": {
+                "preferred": "MaterialButton",
+                "attributes": {
+                    "cornerRadius": "8dp",
+                    "minHeight": "48dp",
+                    "textAppearance": "?attr/textAppearanceButton"
+                },
+                "variants": {
+                    "primary": {
+                        "style": "Widget.Material3.Button",
+                        "usage": "主要操作按钮"
+                    },
+                    "secondary": {
+                        "style": "Widget.Material3.Button.OutlinedButton",
+                        "usage": "次要操作按钮"
+                    },
+                    "text": {
+                        "style": "Widget.Material3.Button.TextButton",
+                        "usage": "文本按钮"
+                    }
+                }
+            },
+            "cards": {
+                "preferred": "MaterialCardView",
+                "attributes": {
+                    "cornerRadius": "12dp",
+                    "elevation": "2dp",
+                    "contentPadding": "16dp"
+                },
+                "variants": {
+                    "standard": {
+                        "style": "Widget.Material3.CardView.Elevated",
+                        "usage": "标准信息展示"
+                    },
+                    "flat": {
+                        "style": "Widget.Material3.CardView.Filled",
+                        "usage": "扁平信息展示"
+                    },
+                    "outlined": {
+                        "style": "Widget.Material3.CardView.Outlined",
+                        "usage": "边框式信息展示"
+                    }
+                }
+            },
+            "selection": {
+                "checkbox": {
+                    "preferred": "MaterialCheckBox",
+                    "style": "Widget.Material3.CompoundButton.CheckBox",
+                    "customStyle": "CustomCheckBox",
+                    "attributes": {
+                        "minSize": "24dp",
+                        "background": "@null",
+                        "buttonTint": "@null"
+                    }
+                },
+                "radioButton": {
+                    "preferred": "MaterialRadioButton",
+                    "style": "Widget.Material3.CompoundButton.RadioButton",
+                    "attributes": {
+                        "minSize": "24dp"
+                    }
+                },
+                "switch": {
+                    "preferred": "MaterialSwitch",
+                    "style": "Widget.Material3.CompoundButton.Switch"
+                }
+            },
+            "textFields": {
+                "preferred": "TextInputLayout",
+                "style": "Widget.Material3.TextInputLayout.OutlinedBox",
+                "attributes": {
+                    "boxCornerRadius": "4dp",
+                    "boxStrokeWidth": "1dp"
+                }
+            },
+            "toolbars": {
+                "preferred": "MaterialToolbar",
+                "style": "Widget.Material3.Toolbar",
+                "customStyle": "ThemeOverlay.App.Toolbar.Center",
+                "attributes": {
+                    "elevation": "4dp",
+                    "titleCentered": true
+                }
+            }
+        },
+        "layout": {
+            "spacing": {
+                "grid": "8dp",
+                "content": "16dp",
+                "section": "24dp"
+            },
+            "containers": {
+                "preferred": "ConstraintLayout",
+                "alternatives": ["LinearLayout", "FrameLayout"]
+            }
+        },
+        "themes": {
+            "enforceAttributes": true,
+            "baseTheme": "Theme.Material3.Light.NoActionBar",
+            "customTheme": "Theme.App",
+            "enforceColorSystem": true
+        }
+    },
+    "codeStyle": {
+        "xml": {
+            "attributes": {
+                "order": [
+                    "android:id",
+                    "android:layout_width",
+                    "android:layout_height",
+                    "style",
+                    "android:layout_margin.*",
+                    "android:padding.*",
+                    "android:background",
+                    "android:src",
+                    "android:text",
+                    "android:textAppearance",
+                    "android:visibility",
+                    "app:layout_constraint.*"
+                ]
+            }
+        }
     }
 } 
