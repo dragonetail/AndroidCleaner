@@ -74,74 +74,112 @@
 - 详细描述：对应用初始化的各个步骤分别进行性能监控
 - 备注：性能优化/低
 
-## RecordingsViewModel相关
-
-### 11. RecordingsViewModel资源释放优化
-- 记录时间：2024-03-18 16:40
+## 1. MainActivity权限处理不完善
+- 记录时间：2024-03-18 16:10:00
 - 状态：未完成
-- 摘要：完善资源释放逻辑
-- 详细描述：在onCleared方法中添加线程池的关闭逻辑，避免资源泄漏
-- 备注：资源管理/中等
+- 摘要：MainActivity的权限处理机制需要完善
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/MainActivity.java
+  - 版本号：594fd07
+  - 行号：50-80
+  - 上下文：权限处理逻辑不完整，需要增加权限请求失败的处理
+- 备注：优先级较高，影响应用基本功能
 
-### 12. RecordingsViewModel单例优化
-- 记录时间：2024-03-18 16:40
+## 2. App单例模式实现不完善
+- 记录时间：2024-03-18 16:10:00
 - 状态：未完成
-- 摘要：优化单例模式实现
-- 详细描述：重构currentPlayingViewModel的实现方式，避免内存泄漏
-- 备注：资源管理/中等
+- 摘要：App类的单例模式实现需要优化
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/App.java
+  - 版本号：594fd07
+  - 行号：20-30
+  - 上下文：单例模式的实现不够严谨，需要考虑多线程安全
+- 备注：优先级较高，可能影响应用稳定性
 
-### 13. RecordingsViewModel异常处理增强
-- 记录时间：2024-03-18 16:40
+## 3. App异常处理不完善
+- 记录时间：2024-03-18 16:10:00
 - 状态：未完成
-- 摘要：完善异常处理机制
-- 详细描述：为playRecording方法添加完整的异常处理，包括prepare、start等操作
-- 备注：健壮性问题/中等
+- 摘要：App类的异常处理机制需要增强
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/App.java
+  - 版本号：594fd07
+  - 行号：100-150
+  - 上下文：全局异常处理不完整，需要增加更多异常类型的处理
+- 备注：优先级较高，影响应用稳定性
 
-### 14. RecordingsViewModel类注释补充
-- 记录时间：2024-03-18 16:40
+## 4. RecordingsViewModel资源释放不完善
+- 记录时间：2024-03-18 16:30:00
 - 状态：未完成
-- 摘要：添加类级别注释
-- 详细描述：为RecordingsViewModel添加符合规范的类注释文档
-- 备注：注释规范/低
+- 摘要：onCleared方法中未关闭ExecutorService
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/recordings/ui/RecordingsViewModel.java
+  - 版本号：594fd07
+  - 行号：396-405
+  - 上下文：onCleared方法中未关闭scheduledExecutor和executorService，可能导致线程池资源泄漏
+- 备注：优先级较高，需要及时修复以避免资源泄漏
 
-### 15. RecordingsViewModel方法注释补充
-- 记录时间：2024-03-18 16:40
+## 5. RecordingsViewModel单例使用不当
+- 记录时间：2024-03-18 16:30:00
 - 状态：未完成
-- 摘要：添加方法注释
-- 详细描述：为所有公共方法添加符合规范的方法注释
-- 备注：注释规范/低
+- 摘要：静态变量currentPlayingViewModel可能导致内存泄漏
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/recordings/ui/RecordingsViewModel.java
+  - 版本号：594fd07
+  - 行号：34
+  - 上下文：使用静态变量持有ViewModel实例，可能导致Activity/Fragment无法被正确回收
+- 备注：优先级较高，需要改用EventBus或其他方式管理播放状态
 
-### 16. RecordingsViewModel日志完善
-- 记录时间：2024-03-18 16:40
+## 6. RecordingsViewModel异常处理不完善
+- 记录时间：2024-03-18 16:30:00
 - 状态：未完成
-- 摘要：完善日志记录
-- 详细描述：为重要方法添加进入和退出日志记录
-- 备注：日志规范/低
+- 摘要：playRecording方法的异常处理不完整
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/recordings/ui/RecordingsViewModel.java
+  - 版本号：594fd07
+  - 行号：205-272
+  - 上下文：playRecording方法中的MediaPlayer操作可能抛出多种异常，但只在文件不存在时进行了处理
+- 备注：优先级较高，需要增加完整的异常处理机制
 
-### 17. RecordingsViewModel性能监控增强
-- 记录时间：2024-03-18 16:40
+## 7. RecordingsViewModel线程安全性问题
+- 记录时间：2024-03-18 16:30:00
 - 状态：未完成
-- 摘要：添加性能监控
-- 详细描述：为loadRecordings方法添加性能监控日志
-- 备注：性能优化/低
+- 摘要：checkPreload方法的线程安全性问题
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/recordings/ui/RecordingsViewModel.java
+  - 版本号：594fd07
+  - 行号：197-204
+  - 上下文：isPreloading标志的读写操作没有同步保护，可能导致线程安全问题
+- 备注：优先级较高，需要使用AtomicBoolean或添加适当的同步机制
 
-### 18. RecordingsViewModel线程安全优化
-- 记录时间：2024-03-18 16:40
+## 8. RecordingsViewModel性能监控不足
+- 记录时间：2024-03-18 16:30:00
 - 状态：未完成
-- 摘要：优化线程安全性
-- 详细描述：使用AtomicBoolean替换isPreloading标志
-- 备注：健壮性问题/中等
+- 摘要：loadRecordings方法缺少性能监控
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/recordings/ui/RecordingsViewModel.java
+  - 版本号：594fd07
+  - 行号：150-196
+  - 上下文：数据加载过程缺少性能监控，无法评估性能问题
+- 备注：优先级较低，可在后续迭代中改进
 
-### 19. RecordingsViewModel常量注释补充
-- 记录时间：2024-03-18 16:40
+## 9. RecordingsViewModel注释规范问题
+- 记录时间：2024-03-18 16:30:00
 - 状态：未完成
-- 摘要：添加常量注释
-- 详细描述：为常量字段添加注释说明
-- 备注：注释规范/低
+- 摘要：类、方法和常量注释缺失
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/recordings/ui/RecordingsViewModel.java
+  - 版本号：594fd07
+  - 行号：全文
+  - 上下文：缺少类级别注释、方法注释和常量注释，不符合项目规范
+- 备注：优先级较低，可在后续迭代中补充
 
-### 20. RecordingsViewModel枚举优化
-- 记录时间：2024-03-18 16:40
+## 10. RecordingsViewModel日志规范问题
+- 记录时间：2024-03-18 16:30:00
 - 状态：未完成
-- 摘要：优化枚举实现
-- 详细描述：使用@IntDef注解替代枚举类型
-- 备注：性能优化/低 
+- 摘要：日志记录不完整
+- 详细描述：
+  - 文件路径：app/src/main/java/com/blackharry/androidcleaner/recordings/ui/RecordingsViewModel.java
+  - 版本号：594fd07
+  - 行号：全文
+  - 上下文：部分重要方法缺少进入和退出日志，不利于问题追踪
+- 备注：优先级较低，可在后续迭代中完善 
